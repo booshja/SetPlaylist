@@ -12,6 +12,9 @@ Concept:
 > >
 > > - [Spotify API](https://developer.spotify.com/documentation/web-api/) - Spotify, links to songs, access to the user's account to create the playlists (API Key already received)
 > > - [setlist.fm API](https://api.setlist.fm/docs/1.0/index.html) - Setlists and Shows (API Key already received)
+> > - [Bandsintown API](https://app.swaggerhub.com/apis-docs/Bandsintown/PublicAPI/3.0.1) - Upcoming Show dates (using whichever works better)
+> >   OR
+> > - [Pollstar API](https://www.pollstar.com/api-info) - Upcoming show dates (using whichever works better)
 
 ### 2. Cocktail Recipe Finder
 
