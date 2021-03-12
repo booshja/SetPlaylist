@@ -14,6 +14,7 @@
 
 > - [setlist.fm API](https://api.setlist.fm/docs/1.0/index.html) - Dates of shows played, setlists, bands
 > - [Spotify API](https://developer.spotify.com/documentation/web-api/) - Links to specific songs, account access for the user (if granted authorization from user)
+> - [Bandsintown API](https://app.swaggerhub.com/apis-docs/Bandsintown/PublicAPI/3.0.1) - Upcoming Show dates
 
 ### 4. In brief, outline your approach to creating your project (knowing that you may not know everything in advance and that these details might change later). Answer questions like the ones below, but feel free to add more information:
 
