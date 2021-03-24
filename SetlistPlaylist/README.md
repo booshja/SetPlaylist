@@ -11,12 +11,8 @@
    >
    > - Logging in user to their Spotify account
    > - Creating a new playlist attributed to the user
+   > - Band and Song Metadata
 3. [Bandsintown API](https://app.swaggerhub.com/apis-docs/Bandsintown/PublicAPI/3.0.1)
    > Uses:
    >
-   > - Band search results
    > - Upcoming shows from specific band
-4. [Mapquest API](https://developer.mapquest.com/documentation/)
-   > Uses:
-   >
-   > - Geocoding of user's location (collected from user registration) for use with Bandsintown API
