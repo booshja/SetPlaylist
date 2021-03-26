@@ -79,13 +79,13 @@ def register():
             db.session.commit()
         except IntegrityError:
             flash('Username not available', 'error')
-            return render_template('dist/templates/register.html', form=form)
+            return render_template('/dist/templates/register.html', form=form)
 
         session_login(user)
 
         return redirect('/home')
     else:
-        return render_template('dist/templates/register.html', form=form)
+        return render_template('/dist/templates/register.html', form=form)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -108,7 +108,7 @@ def login():
             return redirect('/')
         flash('Invalid username/password', 'error')
 
-    return render_template('dist/templates/login.html', form=form)
+    return render_template('/dist/templates/login.html', form=form)
 
 
 @app.route('/logout')
@@ -122,3 +122,26 @@ def logout():
 
 
 ################################################################################
+
+@app.route('/')
+def landing():
+    """
+    GET ROUTE:
+    -
+    """
+    if g.user:
+        return redirect('/home')
+    else:
+        return render_template('/dist/templates/landing.html')
+
+
+@app.route('/home')
+def homepage():
+    """
+    GET ROUTE:
+    -
+    """
+    if not g.user:
+        return redirect('/')
+    else:
+        return render_template('/dist/templates/home.html')
