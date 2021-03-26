@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}{% endblock %}</title>
+    <title>{% block title %}{% endblock title %}</title>
   </head>
   <body>
     <header>
@@ -45,11 +45,11 @@
           <li>
             <a href="#">Log Out</a>
           </li>
-          {% end if %}
+          {% endif %}
         </ul>
       </nav>
     </header>
-    {% block content %}{% endblock %}
+    {% block content %}{% endblock content %}
     <footer>
       <div id="footer">
         <ul>
@@ -60,7 +60,7 @@
           {% else %}
           <li><a href="#">My Account</a></li>
           <li><a href="#">My Playlists</a></li>
-          {% end if %}
+          {% endif %}
           <li><a href="#">Contact</a></li>
           <li><a href="#">Spotify</a></li>
         </ul>

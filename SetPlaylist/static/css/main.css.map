@@ -1,0 +1,13 @@
+{
+    "version": 3,
+    "mappings": "",
+    "sources": [
+        "../../scss/main.scss",
+        "../../scss/_config.scss",
+        "../../scss/_home.scss",
+        "../../scss/_landing.scss",
+        "../../scss/_responsive.scss"
+    ],
+    "names": [],
+    "file": "main.css"
+}
