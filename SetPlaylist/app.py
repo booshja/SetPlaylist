@@ -154,7 +154,7 @@ def landing():
 def homepage():
     """
     GET ROUTE:
-    -
+    - x
     """
     if not g.user:
         return redirect("/")
