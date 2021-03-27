@@ -16,3 +16,7 @@
    > Uses:
    >
    > - Upcoming shows from specific band
+
+**Formatting**
+
+> This project uses pre-commit hooks with isort, black, and flake8
