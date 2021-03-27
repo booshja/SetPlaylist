@@ -91,7 +91,7 @@ class User(db.Model):
         """
         hashed_pwd = bcrypt.generate_password_hash(password).decode("UTF-8")
 
-        user = User(
+        user = cls(
             username=username,
             password=hashed_pwd,
             secret_question=secret_question,
@@ -118,6 +118,14 @@ class User(db.Model):
             if is_auth:
                 return user
         return False
+
+    @classmethod
+    def hash_password(password):
+        """
+        - Hash the given password
+        - Return the hashed password
+        """
+        return bcrypt.generate_password_hash(password).decode("UTF-8")
 
     def __repr__(self):
         """

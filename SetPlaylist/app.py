@@ -1,4 +1,5 @@
 import os
+import re
 
 from dotenv import load_dotenv
 from flask import Flask, flash, g, redirect, render_template, request, session
@@ -99,7 +100,7 @@ def register():
 
         return redirect("/home")
     else:
-        return render_template("register.html", form=form)
+        return render_template("register-edit.html", form=form, title="Register")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -154,9 +155,60 @@ def landing():
 def homepage():
     """
     GET ROUTE:
-    - x
+    -
     """
     if not g.user:
         return redirect("/")
     else:
         return render_template("home.html")
+
+
+################################################################################
+
+
+@app.route("/user/<user_id>/edit", methods=["GET", "POST"])
+def edit_user(user_id):
+    """
+    GET ROUTE:
+    - Displays User Edit Form
+    --------------------
+    POST ROUTE:
+    - Checks password
+    - If passes
+        - Updates any data changed
+        - Commits changes to database
+        - Redirects to User Homepage
+    """
+    form = UserEditForm()
+
+    if form.validate_on_submit():
+        current_password = form.current_password.data
+        user = User.query.get_or_404(user_id)
+
+        if User.authenticate(user.username, current_password):
+            user.username = form.username.data or user.username
+            user.email = form.email.data or user.email
+            user.secret_question = form.secret_question.data or user.secret_question
+            user.secret_answer = form.secret_answer.data or user.secret_answer
+
+            new_password = form.new_password.data or None
+            retype_password = form.retype_password.data or None
+            if (
+                new_password is not None
+                and retype_password is not None
+                and new_password == retype_password
+            ):
+                user.password = User.hash_password(new_password)
+
+            try:
+                db.add(user)
+                db.commit()
+            except IntegrityError:
+                flash("Username taken", "error")
+                return redirect(f"/user/{user_id}/edit")
+
+            return redirect("/home")
+        else:
+            flash("Incorrect Password", "error")
+
+    return redirect(f"/user/{user_id}/edit", form=form)
