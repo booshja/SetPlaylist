@@ -78,7 +78,7 @@ def register():
     - Redirect to Landing Page
     - If form not valid, present form
     - If username in user
-        - Flash message and re-present form
+        - Add username error message and re-present form
     """
 
     form = RegisterForm()
@@ -94,14 +94,14 @@ def register():
             )
             db.session.commit()
         except IntegrityError:
-            flash("Username not available", "error")
-            return render_template("register.html", form=form)
+            form.username.errors.append("Username not available")
+            return render_template("register.html", form=form, title="Register")
 
         session_login(user)
 
         return redirect("/home")
     else:
-        return render_template("register-edit.html", form=form, title="Register")
+        return render_template("register.html", form=form, title="Register")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -122,7 +122,7 @@ def login():
         if user:
             session_login(user)
             return redirect("/")
-        flash("Invalid username/password", "error")
+        form.username.errors.append("Invalid username/password")
 
     return render_template("login.html", form=form)
 
@@ -205,11 +205,11 @@ def edit_user(user_id):
                 db.add(user)
                 db.commit()
             except IntegrityError:
-                flash("Username taken", "error")
+                form.username.errors.append("Username unavailable")
                 return redirect(f"/user/{user_id}/edit")
 
             return redirect("/home")
         else:
-            flash("Incorrect Password", "error")
+            form.password.errors.append("Incorrect Password")
 
-    return redirect(f"/user/{user_id}/edit", form=form)
+    return render_template("edit.html", form=form, title="Edit User")

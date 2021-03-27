@@ -1,0 +1,12 @@
+{% extends 'login-password.html' %} {% block form %}
+<form action="#" id="login-form">
+  {{form.hidden_tag()}} {% for field in form if field.widget.input_type !=
+  'hidden %} {% for error in field.errors %}
+  <span>{{error}}</span>
+  {% endfor %} {{field(placeholder=field.label.text)}} {% endfor %}
+  <a href="/">Cancel</a>
+  <button type="submit">Login</button>
+</form>
+<h5>Don't have an account? <a href="/register">Register</a></h5>
+<h5>Forgot password? <a href="/forgot">Click here</a></h5>
+{% endblock content %}
