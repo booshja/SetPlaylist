@@ -77,7 +77,8 @@ def register():
     - Create new user and add to DB
     - Redirect to Landing Page
     - If form not valid, present form
-    - If username in user: flash message and re-present form
+    - If username in user
+        - Flash message and re-present form
     """
 
     form = RegisterForm()
