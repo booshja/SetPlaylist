@@ -1,19 +1,19 @@
-from dotenv import load_dotenv
 import os
-from flask import Flask, render_template, request, flash, redirect, session, g
-from flask_debugtoolbar import DebugToolbarExtension
-from sqlalchemy.exc import IntegrityError
-from forms import (
-    SearchForm,
-    RegisterForm,
-    LoginForm,
-    UserEditForm,
-    ForgotPassUsername,
-    ForgotPassAnswer,
-    PasswordReset,
-)
-from models import db, connect_db, User
 
+from dotenv import load_dotenv
+from flask import Flask, flash, g, redirect, render_template, request, session
+from flask_debugtoolbar import DebugToolbarExtension
+from forms import (
+    ForgotPassAnswer,
+    ForgotPassUsername,
+    LoginForm,
+    PasswordReset,
+    RegisterForm,
+    SearchForm,
+    UserEditForm,
+)
+from models import User, connect_db, db
+from sqlalchemy.exc import IntegrityError
 
 load_dotenv()
 

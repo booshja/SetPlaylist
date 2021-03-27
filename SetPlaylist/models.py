@@ -4,8 +4,45 @@ from flask_sqlalchemy import SQLAlchemy
 bcrypt = Bcrypt()
 db = SQLAlchemy()
 
-# TODO: Add relationships
-# TODO: Add joins
+
+class Favorite(db.Model):
+    """
+    Connection of a user <-> band
+    """
+
+    __tablename__ = "favorites"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+    band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
+
+    def __repr__(self):
+        """
+        A more readable representation of the instance
+        """
+        return f"<Favorite user_id={self.user_id} band_id={self.band_id}>"
+
+
+class User_Playlist(db.Model):
+    """
+    Connection of a user <-> playlist
+    """
+
+    __tablename__ = "users_playlists"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
+
+    band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
+
+    def __repr__(self):
+        """
+        A more readable representation of the instance
+        """
+        return f"<User_Playlist id={self.id} user_id={self.user_id} band_id={self.band_id}>"
 
 
 class User(db.Model):
@@ -13,7 +50,7 @@ class User(db.Model):
     User Model
     """
 
-    __tablename__ = 'users'
+    __tablename__ = "users"
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -25,28 +62,44 @@ class User(db.Model):
 
     secret_answer = db.Column(db.Text, nullable=False)
 
-    spotify_connected = db.Column(db.Boolean, nullable=False)
+    spotify_connected = db.Column(db.Boolean, nullable=False, default=None)
 
     spotify_user_token = db.Column(db.Text, default=None)
 
     spotify_user_id = db.Column(db.Text, default=None)
 
-    def __repr__(self):
-        """
-        A more readable representation of the instance
-        """
-        return f"<User id={self.id} username={self.username} spotify_connected={self.spotify_connected}>"
+    favorites = db.relationship("Band", secondary="favorites")
+
+    playlists = db.relationship(
+        "Playlist", secondary="users_playlists", backref="users"
+    )
 
     @classmethod
-    def register(cls, username, password, secret_question, secret_answer, spotify_connected, spotify_user_token, spotify_user_id):
+    def register(
+        cls,
+        username,
+        password,
+        secret_question,
+        secret_answer,
+        spotify_connected,
+        spotify_user_token,
+        spotify_user_id,
+    ):
         """
         - Sign up user
         - Hash password and add user to system
         """
-        hashed_pwd = bcrypt.generate_password_hash(password).decode('UTF-8')
+        hashed_pwd = bcrypt.generate_password_hash(password).decode("UTF-8")
 
-        user = User(username=username, password=hashed_pwd, secret_question=secret_question, secret_answer=secret_answer,
-                    spotify_connected=spotify_connected, spotify_user_token=spotify_user_token, spotify_user_id=spotify_user_id)
+        user = User(
+            username=username,
+            password=hashed_pwd,
+            secret_question=secret_question,
+            secret_answer=secret_answer,
+            spotify_connected=spotify_connected,
+            spotify_user_token=spotify_user_token,
+            spotify_user_id=spotify_user_id,
+        )
 
         db.session.add(user)
         return user
@@ -56,7 +109,7 @@ class User(db.Model):
         """
         - Find user with username and password
         - If user - return user
-        - If !user - return False
+        - If not user - return False
         """
         user = cls.query.filter_by(username=username).first()
 
@@ -66,13 +119,19 @@ class User(db.Model):
                 return user
         return False
 
+    def __repr__(self):
+        """
+        A more readable representation of the instance
+        """
+        return f"<User id={self.id} username={self.username} spotify_connected={self.spotify_connected}>"
+
 
 class Playlist(db.Model):
     """
     Playlist Model
     """
 
-    __tablename__ = 'playlists'
+    __tablename__ = "playlists"
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -94,9 +153,39 @@ class Playlist(db.Model):
 
     length = db.Column(db.Integer, nullable=False)
 
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    band_id = db.Column(db.Integer, db.ForeignKey('bands.id'))
+    band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
+
+    songs = db.relationship("Song", secondary="playlists_songs", backref="playlists")
+
+    band = db.relationship("Band")
+
+    def __repr__(self):
+        """
+        A more readable representation of the instance
+        """
+        return f"<Playlist id={self.id} name={self.name} description={self.description} length={self.length} user_id={self.user_id} band_id={self.band_id}>"
+
+
+class Playlist_Song(db.Model):
+    """
+    Connection of a playlist <-> song
+    """
+
+    __tablename__ = "playlists_songs"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    playlist_id = db.Column(db.Integer, db.ForeignKey("playlists.id"))
+
+    song_id = db.Column(db.Integer, db.ForeignKey("songs.id"))
+
+    def __repr__(self):
+        """
+        A more readable representation of the instance
+        """
+        return f"<Playlist_Song id={self.id} playlist_id={self.playlist_id} song_id={self.song_id}>"
 
 
 class Band(db.Model):
@@ -104,7 +193,7 @@ class Band(db.Model):
     Band Model
     """
 
-    __tablename__ = 'bands'
+    __tablename__ = "bands"
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -118,13 +207,19 @@ class Band(db.Model):
 
     photo = db.Column(db.Text)
 
+    def __repr__(self):
+        """
+        A more readable representation of the instance
+        """
+        return f"<Band id={self.id} name={self.name}>"
+
 
 class Song(db.Model):
     """
     Song Model
     """
 
-    __tablename__ = 'songs'
+    __tablename__ = "songs"
 
     id = db.Column(db.Integer, primary_key=True)
 
@@ -138,7 +233,13 @@ class Song(db.Model):
 
     length = db.Column(db.Integer, nullable=False)
 
-    band_id = db.Column(db.Integer, db.ForeignKey('bands.id'))
+    band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
+
+    def __repr__(self):
+        """
+        A more readable representation of the instance
+        """
+        return f"<Song id={self.id} name={self.name} length={self.length} band_id={self.band_id}>"
 
 
 def connect_db(app):
