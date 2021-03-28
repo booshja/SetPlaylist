@@ -90,12 +90,13 @@ class User(db.Model):
         - Hash password and add user to system
         """
         hashed_pwd = bcrypt.generate_password_hash(password).decode("UTF-8")
+        hashed_answer = bcrypt.generate_password_hash(secret_answer).decode("UTF-8")
 
         user = cls(
             username=username,
             password=hashed_pwd,
             secret_question=secret_question,
-            secret_answer=secret_answer,
+            secret_answer=hashed_answer,
             spotify_connected=spotify_connected,
             spotify_user_token=spotify_user_token,
             spotify_user_id=spotify_user_id,
@@ -108,8 +109,10 @@ class User(db.Model):
     def authenticate(cls, username, password):
         """
         - Find user with username and password
-        - If user - return user
-        - If not user - return False
+        - If user
+            - Return user
+        - If not user
+            - Return False
         """
         user = cls.query.filter_by(username=username).first()
 
@@ -117,6 +120,23 @@ class User(db.Model):
             is_auth = bcrypt.check_password_hash(user.password, password)
             if is_auth:
                 return user
+        return False
+
+    @classmethod
+    def authenticate_secret_answer(cls, username, answer):
+        """
+        - Find user with username
+        - If answer
+            - Return True
+        - If not answer
+            - Return False
+        """
+        user = cls.query.filter_by(username=username).first()
+
+        if user:
+            is_answer = bcrypt.check_password_hash(user.secret_answer, answer)
+            if is_answer:
+                return True
         return False
 
     @classmethod

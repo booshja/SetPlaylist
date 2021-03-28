@@ -15,6 +15,7 @@ from forms import (
 )
 from models import User, connect_db, db
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 load_dotenv()
 
@@ -35,8 +36,9 @@ toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-################################################################################
-# User Login/Logout/Register
+##############################
+# User Login/Logout/Register ##########
+##############################
 
 
 @app.before_request
@@ -137,14 +139,84 @@ def logout():
     return redirect("/")
 
 
-################################################################################
+#########################
+# Reset Password Routes ###############
+#########################
+
+
+@app.route("/forgot", methods=["GET", "POST"])
+def forgot_password_check_username():
+    """
+    GET ROUTE:
+    - Display form for username entry for forgotten password
+    --------------------
+    POST ROUTE:
+    - Checks that username is in database
+    - If username is in database
+        - Redirects to next page
+    - If username not in database
+        - Display error, redisplay form
+    """
+    form = ForgotPassUsername()
+
+    if g.user:
+        flash("You can change your password here")
+        return redirect(f"/user/{g.user.id}/edit")
+
+    if form.validate_on_submit():
+        try:
+            user = User.query.filter_by(username=form.username.data).one()
+        except NoResultFound or MultipleResultsFound:
+            form.username.errors.append("Username not found")
+            return render_template("password.html", title="Forgot Password", form=form)
+
+        return redirect(f"/forgot/{user.id}")
+
+    return render_template("password.html", title="Forgot Password", form=form)
+
+
+@app.route("/forgot/<user_id>", methods=["GET", "POST"])
+def forgot_password_check_secret_question(user_id):
+    """
+    GET ROUTE:
+    - Display form for secret question/answer
+    --------------------
+    POST ROUTE:
+    - Check the secret answer
+    -
+    """
+    form = ForgotPassAnswer()
+
+    if g.user:
+        flash("You can change your password here")
+        return redirect(f"/user/{g.user.id}/edit")
+
+    if form.validate_on_submit():
+        user = User.query.get_or_404(user_id)
+        if User.authenticate_secret_answer(user.username, form.secret_answer.data):
+            return redirect("/forgot/<user_id>/new")
+        else:
+            form.secret_answer.errors.append("Invalid secret answer")
+
+    return render_template("password.html", form=form, title="Forgot Password")
+
+
+@app.route("/forgot/<user_id>/new", methods=["GET", "POST"])
+def forgot_password_new_password(user_id):
+    """"""
+
+
+##########################
+# Landing and Home Pages ##############
+##########################
 
 
 @app.route("/")
 def landing():
     """
     GET ROUTE:
-    -
+    - If user logged in, redirect to '/home'
+    - If logged out, return logged out landing page
     """
     if g.user:
         return redirect("/home")
@@ -156,7 +228,8 @@ def landing():
 def homepage():
     """
     GET ROUTE:
-    -
+    - If user logged out, redirect to '/'
+    - If logged in, return logged in homepage
     """
     if not g.user:
         return redirect("/")
@@ -164,7 +237,9 @@ def homepage():
         return render_template("home.html")
 
 
-################################################################################
+###############
+# User Routes #########################
+###############
 
 
 @app.route("/user/<user_id>/edit", methods=["GET", "POST"])
