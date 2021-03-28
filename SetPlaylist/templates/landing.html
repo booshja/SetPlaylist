@@ -1,2 +1,73 @@
-{% extends 'base.html' %} {% block title %}SetPlaylist - {{g.user.username}}{%
-endblock title %} {% block content %}SetPlaylist {% endblock content %}
+{% extends 'base.html' %} {% block title %} SetPlaylist - Your favorite concert
+memories, one playlist at a time! {% endblock title %} {% block content %}
+<main>
+    <section id="hero">
+        <div id="landing_hero">
+            <div id="__title_div">
+                <h1>SetPlaylist</h1>
+                <p>Your favorite concert memories, one playlist at a time</p>
+                <a href="/register">Get Started</a>
+            </div>
+        </div>
+    </section>
+    <section id="info">
+        <div id="how_it_works">
+            <div>
+                <h2>How It Works</h2>
+            </div>
+            <div>
+                <div>
+                    <span><i class="fas fa-search"></i></span>
+                    <p>Search for a band</p>
+                </div>
+                <div>
+                    <span><i class="fas fa-list-ul"></i></span>
+                    <p>Pick a setlist</p>
+                    <p>OR</p>
+                    <p>Let us make you one</p>
+                </div>
+                <div>
+                    <span><i class="fas fa-headphones-alt"></i></span>
+                    <p>Save to your Spotify</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    <section id="band_search">
+        <div id="search_bands">
+            <h3>Search Bands</h3>
+            <form action="/search" method="get">
+                <input type="text" name="search" id="search" />
+            </form>
+        </div>
+    </section>
+    <section id="playlists_promo">
+        <div id="our_favorites">
+            <div>
+                <h3>Our Favorites</h3>
+            </div>
+            <div>
+                <div>
+                    <h4>Led Zeppelin</h4>
+                    <h5>Royal Albert Hall</h5>
+                    <h5>January 9, 1970</h5>
+                    <a href="#">See Playlist</a>
+                </div>
+                <div>
+                    <h4>Led Zeppelin</h4>
+                    <h5>Royal Albert Hall</h5>
+                    <h5>January 9, 1970</h5>
+                    <a href="#">See Playlist</a>
+                </div>
+                <div>
+                    <h4>Led Zeppelin</h4>
+                    <h5>Royal Albert Hall</h5>
+                    <h5>January 9, 1970</h5>
+                    <a href="#">See Playlist</a>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
+
+{% endblock content %}

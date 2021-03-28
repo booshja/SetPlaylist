@@ -227,8 +227,11 @@ def forgot_password_new_password(user_id):
         if form.new_password.data == form.retype_password.data:
             hashed_pwd = User.hash_password(form.new_password.data)
             user.password = hashed_pwd
+
             db.add(user)
             db.commit()
+
+            return redirect("/login")
         else:
             form.new_password.errors.append("Passwords must match")
             return render_template("password.html", title="Reset Password", form=form)
