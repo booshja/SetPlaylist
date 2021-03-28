@@ -20,7 +20,7 @@ class RegisterForm(FlaskForm):
     password = PasswordField("Password", validators=[Length(min=8)])
     email = StringField("Email", validators=[DataRequired(), Email()])
     secret_question = StringField("Secret Question", validators=[DataRequired()])
-    secret_answer = StringField("Secret Answer", validators=[DataRequired()])
+    secret_answer = PasswordField("Secret Answer", validators=[DataRequired()])
 
 
 class LoginForm(FlaskForm):
@@ -63,7 +63,7 @@ class ForgotPassAnswer(FlaskForm):
     """
 
     secret_question = StringField("Secret Question")
-    secret_answer = StringField("Secret Answer", validators=[DataRequired()])
+    secret_answer = PasswordField("Secret Answer", validators=[DataRequired()])
 
 
 class PasswordReset(FlaskForm):
@@ -71,5 +71,5 @@ class PasswordReset(FlaskForm):
     Form for entering new password
     """
 
-    new_password = StringField("New Password", validators=[Length(min=8)])
-    retype_password = StringField("Retype New Password", validators=[Length(min=8)])
+    new_password = PasswordField("New Password", validators=[Length(min=8)])
+    retype_password = PasswordField("Retype New Password", validators=[Length(min=8)])

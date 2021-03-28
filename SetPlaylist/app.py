@@ -183,7 +183,7 @@ def forgot_password_check_secret_question(user_id):
     --------------------
     POST ROUTE:
     - Check the secret answer
-    -
+    - Redirect to '/forgot/<user_id>/new'
     """
     form = ForgotPassAnswer()
 
@@ -191,19 +191,49 @@ def forgot_password_check_secret_question(user_id):
         flash("You can change your password here")
         return redirect(f"/user/{g.user.id}/edit")
 
+    user = User.query.get_or_404(user_id)
+
     if form.validate_on_submit():
-        user = User.query.get_or_404(user_id)
         if User.authenticate_secret_answer(user.username, form.secret_answer.data):
             return redirect("/forgot/<user_id>/new")
         else:
             form.secret_answer.errors.append("Invalid secret answer")
+
+    form.secret_question.data = user.secret_question
 
     return render_template("password.html", form=form, title="Forgot Password")
 
 
 @app.route("/forgot/<user_id>/new", methods=["GET", "POST"])
 def forgot_password_new_password(user_id):
-    """"""
+    """
+    GET ROUTE:
+    - Display form for password reset
+    --------------------
+    POST ROUTE:
+    - Check that password fields match
+    - Save change to database
+    - Redirect to login page
+    """
+    form = PasswordReset()
+
+    if g.user:
+        flash("You can change your password here")
+        return redirect(f"/user/{g.user.id}/edit")
+
+    user = User.query.get_or_404(user_id)
+
+    if form.validate_on_submit():
+        if form.new_password.data == form.retype_password.data:
+            hashed_pwd = User.hash_password(form.new_password.data)
+            user.password = hashed_pwd
+            db.add(user)
+            db.commit()
+        else:
+            form.new_password.errors.append("Passwords must match")
+            return render_template("password.html", title="Reset Password", form=form)
+
+    return render_template("password.html", form=form, title="Reset Password")
 
 
 ##########################
