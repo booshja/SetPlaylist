@@ -3,14 +3,6 @@ from wtforms import PasswordField, StringField
 from wtforms.validators import DataRequired, Email, Length
 
 
-class SearchForm(FlaskForm):
-    """
-    Form for searching bands
-    """
-
-    search = StringField("Search", validators=[DataRequired()])
-
-
 class RegisterForm(FlaskForm):
     """
     Form for registering users

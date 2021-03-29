@@ -1,9 +1,9 @@
-{% extends 'base.html' %} {% block title %}{{band.name}} - SetPlaylist{%
-endblock title %} {% block content %}
+{% extends 'base.html' %} {% block title %}{{playlist.band.name}} -
+SetPlaylist{% endblock title %} {% block content %}
 <section id="hero">
     <div id="band_detail_hero">
         <div id="band_detail_hero__title_div">
-            <h1>{{band.name}}</h1>
+            <h1>{{playlist.band.name}}</h1>
         </div>
     </div>
 </section>
@@ -31,12 +31,12 @@ endblock title %} {% block content %}
         <div id="links">
             <a href="#">Save Playlist</a>
             <a href="#">Add Playlist to Spotify</a>
-            <a href="#">{{band.name}} on Spotify</a>
+            <a href="#">{{playlist.band.name}} on Spotify</a>
         </div>
         <div id="details">
             <h3>Show Details</h3>
             <ul>
-                <li>{{band.name}}</li>
+                <li>{{playlist.band.name}}</li>
                 <li>{{playlist.venue_name}}</li>
                 <li>{{playlist.venue_city}}, {{playlist.venue_state}}</li>
                 <li>{{playlist.event_date}}</li>

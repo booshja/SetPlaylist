@@ -1,5 +1,4 @@
 import os
-import re
 
 from dotenv import load_dotenv
 from flask import Flask, flash, g, redirect, render_template, requests, session
@@ -10,7 +9,6 @@ from forms import (
     LoginForm,
     PasswordReset,
     RegisterForm,
-    SearchForm,
     UserEditForm,
 )
 from models import (
@@ -136,7 +134,7 @@ def login():
             return redirect("/")
         form.username.errors.append("Invalid username/password")
 
-    return render_template("login.html", form=form)
+    return render_template("login.html", form=form, title="Login")
 
 
 @app.route("/logout")
@@ -380,6 +378,8 @@ def show_band_details(band_id):
     """
     Todo - Shows band details
     """
+    # If logged in - band, setlists, upcoming_shows
+    # If not - band
 
 
 @app.route("/band/<band_id>/setlist/<offset>")
@@ -388,6 +388,7 @@ def return_band_setlists_paginate(band_id, offset):
     Todo - Shows further results for setlist results
             - Comes from JS axios call
     """
+    # Do I need this? Could just pass entire list and have JS paginate
 
 
 @app.route("/band/<band_id>/shows/<offset>")
@@ -396,6 +397,7 @@ def return_band_shows_paginate(band_id, offset):
     Todo - Shows further results for show results
             -Comes from JS axios call
     """
+    # Do I need this? Could just pass entire list and have JS paginate
 
 
 ###################
@@ -408,13 +410,15 @@ def show_setlist():
     """
     Todo - Shows the setlist data that was selected
     """
+    # setlist (Playlist object that has not been saved to the db)
 
 
 @app.route("/playlist/<playlist_id>")
-def show_created_setlist():
+def show_created_playlist():
     """
     Todo - Shows the setlist that was created
     """
+    # playlist (Playlist object saved to db)
 
 
 @app.route("/playlist/<band_id>/hype")
@@ -422,6 +426,7 @@ def show_hype_setlist():
     """
     Todo - Shows the setlist created from band's top songs
     """
+    # playlist (Playlist object saved to db, created from band's top songs from spotify)
 
 
 @app.route("/playlist/success")
@@ -429,6 +434,7 @@ def show_success_page():
     """
     Todo - shows the success page after playlist saved to spotify
     """
+    # spotify_link (link to open playlist via spotify)
 
 
 @app.route("/playlist/failure")
