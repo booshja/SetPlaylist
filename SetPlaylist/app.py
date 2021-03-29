@@ -105,13 +105,13 @@ def register():
             db.session.commit()
         except IntegrityError:
             form.username.errors.append("Username not available")
-            return render_template("register.html", form=form, title="Register")
+            return render_template("/auth/register.html", form=form, title="Register")
 
         session_login(user)
 
         return redirect("/home")
     else:
-        return render_template("register.html", form=form, title="Register")
+        return render_template("/auth/register.html", form=form, title="Register")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -134,7 +134,7 @@ def login():
             return redirect("/")
         form.username.errors.append("Invalid username/password")
 
-    return render_template("login.html", form=form, title="Login")
+    return render_template("/auth/login.html", form=form, title="Login")
 
 
 @app.route("/logout")
@@ -176,12 +176,14 @@ def forgot_password_check_username():
             user = User.query.filter_by(username=form.username.data).one()
         except NoResultFound or MultipleResultsFound:
             form.username.errors.append("Username not found")
-            return render_template("password.html", title="Forgot Password", form=form)
+            return render_template(
+                "/auth/password.html", title="Forgot Password", form=form
+            )
 
         g.password_reset = True
         return redirect(f"/forgot/{user.id}")
 
-    return render_template("password.html", title="Forgot Password", form=form)
+    return render_template("/auth/password.html", title="Forgot Password", form=form)
 
 
 @app.route("/forgot/<user_id>", methods=["GET", "POST"])
@@ -210,7 +212,7 @@ def forgot_password_check_secret_question(user_id):
 
     form.secret_question.data = user.secret_question
 
-    return render_template("password.html", form=form, title="Forgot Password")
+    return render_template("/auth/password.html", form=form, title="Forgot Password")
 
 
 @app.route("/forgot/<user_id>/new", methods=["GET", "POST"])
@@ -247,12 +249,12 @@ def forgot_password_new_password(user_id):
             form.new_password.errors.append("Passwords must match")
             return render_template("password.html", title="Reset Password", form=form)
 
-    return render_template("password.html", form=form, title="Reset Password")
+    return render_template("/auth/password.html", form=form, title="Reset Password")
 
 
-##########################
-# Landing and Home Pages ##############
-##########################
+################
+# Landing Page ########################
+################
 
 
 @app.route("/")
@@ -268,7 +270,12 @@ def landing():
         return render_template("landing.html")
 
 
-@app.route("/home")
+###############
+# User Routes #########################
+###############
+
+
+@app.route("/user/home")
 def homepage():
     """
     GET ROUTE:
@@ -279,45 +286,7 @@ def homepage():
         return redirect("/")
     else:
         recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
-        return render_template("home.html", recent_playlists=recent_playlists)
-
-
-#################
-# Search Routes #######################
-#################
-
-
-@app.route("/search")
-def search_page():
-    """
-    GET ROUTE:
-    - Display search form
-    """
-    return render_template("search.html")
-
-
-@app.route("/search/<q>")
-def search_results(q):
-    """
-    GET ROUTE:
-    - Call Setlist.fm API for search
-    - Display search results
-    """
-    url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
-    band_results = requests.get(
-        url,
-        headers={
-            "Accept": "application/json",
-            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-        },
-        params=[("artistName", q)],
-    )
-    return render_template("search.html", q=q, band_results=band_results)
-
-
-###############
-# User Routes #########################
-###############
+        return render_template("/user/home.html", recent_playlists=recent_playlists)
 
 
 @app.route("/user/<user_id>/edit", methods=["GET", "POST"])
@@ -365,7 +334,7 @@ def edit_user(user_id):
         else:
             form.password.errors.append("Incorrect Password")
 
-    return render_template("edit.html", form=form, title="Edit User")
+    return render_template("/user/edit.html", form=form, title="Edit User")
 
 
 ###############
@@ -398,6 +367,39 @@ def return_band_shows_paginate(band_id, offset):
             -Comes from JS axios call
     """
     # Do I need this? Could just pass entire list and have JS paginate
+
+
+######################
+# Band Search Routes ##################
+######################
+
+
+@app.route("/band/search")
+def search_page():
+    """
+    GET ROUTE:
+    - Display search form
+    """
+    return render_template("/band/search.html")
+
+
+@app.route("/band/search/<q>")
+def search_results(q):
+    """
+    GET ROUTE:
+    - Call Setlist.fm API for search
+    - Display search results
+    """
+    url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+    band_results = requests.get(
+        url,
+        headers={
+            "Accept": "application/json",
+            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+        },
+        params=[("artistName", q)],
+    )
+    return render_template("/band/search.html", q=q, band_results=band_results)
 
 
 ###################
@@ -451,14 +453,14 @@ def show_failure_page():
 
 @app.errorhandler(404)
 def page_not_found(e):
-    return render_template("404.html"), 404
+    return render_template("/errors/404.html"), 404
 
 
 @app.errorhandler(500)
 def server_error(e):
-    return render_template("500.html"), 500
+    return render_template("/errors/500.html"), 500
 
 
 @app.errorhandler(403)
 def forbidden(e):
-    return render_template("403.html"), 403
+    return render_template("/errors/403.html"), 403
