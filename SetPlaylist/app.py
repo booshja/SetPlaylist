@@ -1,7 +1,8 @@
 import os
 
+import requests
 from dotenv import load_dotenv
-from flask import Flask, flash, g, redirect, render_template, requests, session
+from flask import Flask, flash, g, redirect, render_template, request, session
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import (
     ForgotPassAnswer,
@@ -90,7 +91,6 @@ def register():
     - If username in user
         - Add username error message and re-present form
     """
-
     form = RegisterForm()
 
     if form.validate_on_submit():
@@ -123,7 +123,6 @@ def login():
     POST ROUTE:
     - Handle user login
     """
-
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -380,7 +379,23 @@ def search_page():
     GET ROUTE:
     - Display search form
     """
-    return render_template("/band/search.html")
+    search = request.args.get("q")
+
+    if not search:
+        return render_template("users/search.html")
+    else:
+        url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+        band_results = requests.get(
+            url,
+            headers={
+                "Accept": "application/json",
+                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+            },
+            params=[("artistName", search)],
+        )
+    return render_template(
+        "/band/search.html", search=search, band_results=band_results
+    )
 
 
 @app.route("/band/search/<q>")
@@ -390,16 +405,6 @@ def search_results(q):
     - Call Setlist.fm API for search
     - Display search results
     """
-    url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
-    band_results = requests.get(
-        url,
-        headers={
-            "Accept": "application/json",
-            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-        },
-        params=[("artistName", q)],
-    )
-    return render_template("/band/search.html", q=q, band_results=band_results)
 
 
 ###################

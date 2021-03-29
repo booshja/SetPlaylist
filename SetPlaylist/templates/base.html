@@ -1,74 +1,73 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script
-      src="https://kit.fontawesome.com/396432886d.js"
-      crossorigin="anonymous"
-    ></script>
-    <title>{% block title %}{% endblock title %}</title>
-  </head>
-  <body>
-    <header>
-      <nav>
-        <div><img src="#" alt="SetPlaylist Logo" /></div>
-        <ul>
-          {% if not g.user %}
-          <li>
-            <form action="#">
-              <input
-                type="text"
-                name="q"
-                placeholder="Search Bands"
-                id="search"
-              />
-            </form>
-          </li>
-          <li>
-            <a href="#">Sign Up</a>
-          </li>
-          <li>
-            <a href="#">Log In</a>
-          </li>
-          {% else %}
-          <li><a href="#">Home</a></li>
-          <li><a href="#">My Playlists</a></li>
-          <li><a href="#">{{g.user.username}}</a></li>
-          <li>
-            <form action="#">
-              <input
-                type="text"
-                name="q"
-                placeholder="Search Bands"
-                id="search"
-              />
-            </form>
-          </li>
-          <li>
-            <a href="#">Log Out</a>
-          </li>
-          {% endif %}
-        </ul>
-      </nav>
-    </header>
-    {% block content %}{% endblock content %}
-    <footer>
-      <div id="footer">
-        <ul>
-          <li><a href="#">SetPlaylist</a></li>
-          <li><a href="#">Search</a></li>
-          {% if not g.user %}
-          <li><a href="#">Create Account</a></li>
-          {% else %}
-          <li><a href="#">My Account</a></li>
-          <li><a href="#">My Playlists</a></li>
-          {% endif %}
-          <li><a href="#">Contact</a></li>
-          <li><a href="#">Spotify</a></li>
-        </ul>
-      </div>
-    </footer>
-  </body>
+    <head>
+        <meta charset="UTF-8" />
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <script
+            src="https://kit.fontawesome.com/396432886d.js"
+            crossorigin="anonymous"
+        ></script>
+        <title>{% block title %}{% endblock title %}</title>
+    </head>
+    <body>
+        <header>
+            <nav>
+                <div><img src="#" alt="SetPlaylist Logo" /></div>
+                <ul>
+                    {% if not g.user %}
+                    <li>
+                        <form action="#">
+                            <input
+                                type="text"
+                                name="q"
+                                placeholder="Search Bands"
+                                id="search"
+                            />
+                        </form>
+                    </li>
+                    <li>
+                        <a href="#">Sign Up</a>
+                    </li>
+                    <li>
+                        <a href="#">Log In</a>
+                    </li>
+                    {% else %}
+                    <li><a href="#">Home</a></li>
+                    <li><a href="#">My Playlists</a></li>
+                    <li><a href="#">{{g.user.username}}</a></li>
+                    <li>
+                        <form action="/band/search">
+                            <input
+                                name="q"
+                                placeholder="Search Bands"
+                                id="search"
+                            />
+                        </form>
+                    </li>
+                    <li>
+                        <a href="#">Log Out</a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </header>
+        {% block content %}{% endblock content %}
+        <footer>
+            <div id="footer">
+                <ul>
+                    <li><a href="#">SetPlaylist</a></li>
+                    <li><a href="#">Search</a></li>
+                    {% if not g.user %}
+                    <li><a href="#">Create Account</a></li>
+                    {% else %}
+                    <li><a href="#">My Account</a></li>
+                    <li><a href="#">My Playlists</a></li>
+                    {% endif %}
+                    <li><a href="#">Contact</a></li>
+                    <li><a href="#">Spotify</a></li>
+                </ul>
+            </div>
+        </footer>
+    </body>
 </html>
