@@ -1,0 +1,32 @@
+{% extends 'base.html' %} {% block title %} {{q}} - SetPlaylist {% endblock %}
+{% block content %}
+<section id="hero">
+    <div id="results_hero">
+        <div id="results_hero__title_div">
+            <h1>Results</h1>
+            <h2>for "{{q}}"</h2>
+        </div>
+    </div>
+</section>
+<section id="band_search">
+    <div id="search_bands">
+        <h3>Search Bands</h3>
+        <form action="/search" method="get">
+            <input type="text" name="search" id="search" />
+        </form>
+    </div>
+</section>
+{% if band_results %}
+<section id="results">
+    <div id="results_list">
+        <div id="results_list__headline">
+            <h3>Results</h3>
+        </div>
+        <div id="results_list__bands">
+            {% for band in band_results %}
+            <a href="#">{{band.name}}</a>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %} {% endblock %}

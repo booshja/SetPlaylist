@@ -1,0 +1,48 @@
+{% extends 'base.html' %} {% block title %}{{band.name}} - SetPlaylist{%
+endblock %} {% block content %}
+<section id="hero">
+    <div id="band_detail_hero">
+        <div id="band_detail_hero__title_div">
+            <h1>{{band.name}}</h1>
+        </div>
+    </div>
+</section>
+<section id="body">
+    <div id="bio_links">
+        <div id="bio">
+            <div id="bio__headline">
+                <h3>{{band.name}} Bio</h3>
+                <!-- TODO: Need to check this based on data -->
+                <!-- <p>{{band.bio}}</p> TODO: -->
+            </div>
+        </div>
+        <div id="links">
+            <div id="links__headline">
+                <a href="#">Create Hype Up Playlist</a>
+                <a href="#">{{band.name}} on Spotify</a>
+                <a href="#">Add to favorites</a>
+            </div>
+        </div>
+    </div>
+    <div id="setlists">
+        <div id="setlists__headline">
+            <h3>Setlists</h3>
+            {% for set in setlists %}
+            <a href="#"
+                >{{set.venue_name}} - {{set.event_date}} - {{set.venue_city}},
+                {{set.venue_state}}</a
+            >
+            {% endfor %}
+        </div>
+    </div>
+</section>
+<section id="upcoming">
+    <div id="upcoming_shows">
+        <h3>Upcoming Shows</h3>
+        {% for show in upcoming_shows %}
+        <!-- TODO: Check these based on data -->
+        <!-- <a href="#">{{show.date}} - {{show.venue}} - {{show.location}}</a>-->
+        {% %}
+    </div>
+</section>
+{% endblock content %}

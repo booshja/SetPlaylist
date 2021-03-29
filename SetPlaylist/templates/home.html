@@ -3,7 +3,7 @@ endblock title %} {% block content %}
 <main>
     <section id="hero">
         <div id="landing_hero">
-            <div id="__title_div">
+            <div id="landing_hero__title_div">
                 <h1>Welcome back,</h1>
                 <p>{{user.username}}</p>
             </div>
@@ -27,7 +27,7 @@ endblock title %} {% block content %}
                     <div class="your_playlists__playlists">
                         {% for playlist in g.user.playlists %}
                         <div>
-                            <h4>{{playlist.name}}</h4>
+                            <a href="#">{{playlist.name}}</a>
                             <h5>{{playlist.band.name}}</h5>
                             <h5>{{playlist.venue_name}}</h5>
                             <h5>
@@ -46,6 +46,9 @@ endblock title %} {% block content %}
                     <div id="your_bands__bands">
                         {% for band in g.user.favorites %}
                         <a href="#">{{band.name}}</a>
+                        <small
+                            ><a href="#"><i class="far fa-trash-alt"></i></a
+                        ></small>
                         {% endfor %}
                     </div>
                 </div>

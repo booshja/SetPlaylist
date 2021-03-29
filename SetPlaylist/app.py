@@ -2,7 +2,7 @@ import os
 import re
 
 from dotenv import load_dotenv
-from flask import Flask, flash, g, redirect, render_template, request, session
+from flask import Flask, flash, g, redirect, render_template, requests, session
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import (
     ForgotPassAnswer,
@@ -13,7 +13,17 @@ from forms import (
     SearchForm,
     UserEditForm,
 )
-from models import User, connect_db, db
+from models import (
+    Band,
+    Favorite,
+    Playlist,
+    Playlist_Song,
+    Song,
+    User,
+    User_Playlist,
+    connect_db,
+    db,
+)
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
@@ -170,6 +180,7 @@ def forgot_password_check_username():
             form.username.errors.append("Username not found")
             return render_template("password.html", title="Forgot Password", form=form)
 
+        g.password_reset = True
         return redirect(f"/forgot/{user.id}")
 
     return render_template("password.html", title="Forgot Password", form=form)
@@ -187,9 +198,9 @@ def forgot_password_check_secret_question(user_id):
     """
     form = ForgotPassAnswer()
 
-    if g.user:
-        flash("You can change your password here")
-        return redirect(f"/user/{g.user.id}/edit")
+    if not g.password_reset:
+        flash("Access Unauthorized")
+        return redirect("/")
 
     user = User.query.get_or_404(user_id)
 
@@ -217,9 +228,9 @@ def forgot_password_new_password(user_id):
     """
     form = PasswordReset()
 
-    if g.user:
-        flash("You can change your password here")
-        return redirect(f"/user/{g.user.id}/edit")
+    if not g.password_reset:
+        flash("Access Unauthorized")
+        return redirect("/")
 
     user = User.query.get_or_404(user_id)
 
@@ -230,6 +241,8 @@ def forgot_password_new_password(user_id):
 
             db.add(user)
             db.commit()
+
+            g.password_reset = False
 
             return redirect("/login")
         else:
@@ -267,7 +280,41 @@ def homepage():
     if not g.user:
         return redirect("/")
     else:
-        return render_template("home.html")
+        recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
+        return render_template("home.html", recent_playlists=recent_playlists)
+
+
+#################
+# Search Routes #######################
+#################
+
+
+@app.route("/search")
+def search_page():
+    """
+    GET ROUTE:
+    - Display search form
+    """
+    return render_template("search.html")
+
+
+@app.route("/search/<q>")
+def search_results(q):
+    """
+    GET ROUTE:
+    - Call Setlist.fm API for search
+    - Display search results
+    """
+    url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+    band_results = requests.get(
+        url,
+        headers={
+            "Accept": "application/json",
+            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+        },
+        params=[("artistName", q)],
+    )
+    return render_template("search.html", q=q, band_results=band_results)
 
 
 ###############
@@ -321,3 +368,91 @@ def edit_user(user_id):
             form.password.errors.append("Incorrect Password")
 
     return render_template("edit.html", form=form, title="Edit User")
+
+
+###############
+# Band Routes #########################
+###############
+
+
+@app.route("/band/<band_id>")
+def show_band_details(band_id):
+    """
+    Todo - Shows band details
+    """
+
+
+@app.route("/band/<band_id>/setlist/<offset>")
+def return_band_setlists_paginate(band_id, offset):
+    """
+    Todo - Shows further results for setlist results
+            - Comes from JS axios call
+    """
+
+
+@app.route("/band/<band_id>/shows/<offset>")
+def return_band_shows_paginate(band_id, offset):
+    """
+    Todo - Shows further results for show results
+            -Comes from JS axios call
+    """
+
+
+###################
+# Playlist Routes #####################
+###################
+
+
+@app.route("/playlist/setlist")
+def show_setlist():
+    """
+    Todo - Shows the setlist data that was selected
+    """
+
+
+@app.route("/playlist/<playlist_id>")
+def show_created_setlist():
+    """
+    Todo - Shows the setlist that was created
+    """
+
+
+@app.route("/playlist/<band_id>/hype")
+def show_hype_setlist():
+    """
+    Todo - Shows the setlist created from band's top songs
+    """
+
+
+@app.route("/playlist/success")
+def show_success_page():
+    """
+    Todo - shows the success page after playlist saved to spotify
+    """
+
+
+@app.route("/playlist/failure")
+def show_failure_page():
+    """
+    Todo - shows the failure page after playlist not saved to spotify
+    """
+
+
+#######################
+# Custom Error Routes #################
+#######################
+
+
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template("404.html"), 404
+
+
+@app.errorhandler(500)
+def server_error(e):
+    return render_template("500.html"), 500
+
+
+@app.errorhandler(403)
+def forbidden(e):
+    return render_template("403.html"), 403

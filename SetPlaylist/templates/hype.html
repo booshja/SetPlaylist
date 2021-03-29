@@ -1,0 +1,42 @@
+{% extends 'base.html' %} {% block title %}{{band.name}} - SetPlaylist{%
+endblock title %} {% block content %}
+<section id="hero">
+    <div id="band_detail_hero">
+        <div id="band_detail_hero__title_div">
+            <h1>{{band.name}}</h1>
+            <h2>Hype-Up Playlist</h2>
+        </div>
+    </div>
+</section>
+<section id="body">
+    <div id="main_column">
+        <div id="playlist">
+            <h3>Playlist</h3>
+            <ol>
+                {% for song in playlist %}
+                <li><a href="#">{{song.name}}</a></li>
+                {% endfor %}
+            </ol>
+        </div>
+    </div>
+    <div id="right_column">
+        <div id="links">
+            <a href="#">Save Playlist</a>
+            <a href="#">Add Playlist to Spotify</a>
+            <a href="#">{{band.name}} on Spotify</a>
+        </div>
+        <div id="details">
+            <div id="details__headline">
+                <h3>Details</h3>
+            </div>
+            <div id="details__links">
+                <ul id="details__list">
+                    <li>{{band.name}}</li>
+                    <li>Songs in Playlist: {{len(playlist.songs)}}</li>
+                    <li>Length of Playlist: {{playlist.length}}</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}
