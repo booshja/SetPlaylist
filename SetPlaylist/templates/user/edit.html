@@ -1,4 +1,4 @@
-{% extends '/../auth/register-edit.html' %} {% block form %}
+{% extends 'auth/register-edit.html' %} {% block form %}
 <form action="#" id="edit_form">
     {{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
     'hidden' %} {% for error in field.errors %}

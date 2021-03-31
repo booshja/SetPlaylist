@@ -1,5 +1,5 @@
-{% extends '/../base.html' %} {% block title %}{{setlist.band.name}} -
-SetPlaylist{% endblock title %} {% block content %}
+{% extends 'base.html' %} {% block title %}{{setlist.band.name}} - SetPlaylist{%
+endblock title %} {% block content %}
 <section id="hero">
     <div id="band_detail_hero">
         <div id="band_detail_hero__title_div">
@@ -17,6 +17,7 @@ SetPlaylist{% endblock title %} {% block content %}
                 <li><a href="#">{{song.name}}</a></li>
                 {% endfor %}
             </ol>
+            <p>Source: <a href="{{setlist.url}}">Setlist on setlist.fm</a></p>
         </div>
     </div>
     <div id="right_column">

@@ -1,0 +1,32 @@
+$text-light: #ffffff;
+$text-dark: #000000;
+$nav-color: #6a9eae;
+$footer-color: #2d3d51;
+$div-color: #cebaa5;
+$card-color: #3b5262;
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+
+    @mixin media-md {
+        @media screen and (min-width: 768px) {
+            @content;
+        }
+    }
+    @mixin media-lg {
+        @media screen and (min-width: 1024px) {
+            @content;
+        }
+    }
+    @mixin media-xl {
+        @media screen and (min-width: 1600px) {
+            @content;
+        }
+    }
+
+    @mixin transition-ease {
+        transition: all 500ms ease-in-out;
+    }
+}

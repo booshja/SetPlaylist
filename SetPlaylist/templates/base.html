@@ -8,12 +8,19 @@
             src="https://kit.fontawesome.com/396432886d.js"
             crossorigin="anonymous"
         ></script>
+        <link rel="stylesheet" href="/../static/css/main.css" />
         <title>{% block title %}{% endblock title %}</title>
     </head>
     <body>
         <header>
             <nav>
-                <div><img src="#" alt="SetPlaylist Logo" /></div>
+                <div>
+                    <a href="/"
+                        ><img
+                            src="static/svg/SetPlaylist_Logo.svg"
+                            alt="SetPlaylist Logo Link"
+                    /></a>
+                </div>
                 <ul>
                     {% if not g.user %}
                     <li>
@@ -56,7 +63,13 @@
         <footer>
             <div id="footer">
                 <ul>
-                    <li><a href="#">SetPlaylist</a></li>
+                    <li>
+                        <a href="/"
+                            ><img
+                                src="static/svg/SetPlaylist_Logo.svg"
+                                alt="SetPlaylist Logo Link"
+                        /></a>
+                    </li>
                     <li><a href="#">Search</a></li>
                     {% if not g.user %}
                     <li><a href="#">Create Account</a></li>
@@ -65,8 +78,17 @@
                     <li><a href="#">My Playlists</a></li>
                     {% endif %}
                     <li><a href="#">Contact</a></li>
-                    <li><a href="#">Spotify</a></li>
+                    <li>
+                        <a href="#"
+                            ><img
+                                src="static/svg/Spotify_Logo_RGB_White.svg"
+                                alt="Spotify Logo Link"
+                        /></a>
+                    </li>
                 </ul>
+            </div>
+            <div id="copyright">
+                <p>&#169 Jacob Andes, 2021</p>
             </div>
         </footer>
     </body>

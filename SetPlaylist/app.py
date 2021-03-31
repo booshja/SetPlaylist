@@ -1,6 +1,7 @@
 import os
 
 import requests
+import spotipy
 from dotenv import load_dotenv
 from flask import Flask, flash, g, redirect, render_template, request, session
 from flask_debugtoolbar import DebugToolbarExtension
@@ -23,6 +24,7 @@ from models import (
     connect_db,
     db,
 )
+from spotipy.oath2 import SpotifyClientCredentials
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
@@ -144,6 +146,20 @@ def logout():
     """
     session_logout()
     return redirect("/")
+
+
+@app.route("/auth")
+def spotify_authentication_return():
+    """
+    GET ROUTE:
+    - Handle Spotify response to User Spotify login
+    - Redirect to '/home'
+    """
+    if not g.user:
+        flash("Access Unathorized")
+        return redirect("/")
+
+    return redirect("/home")
 
 
 #########################
@@ -346,6 +362,7 @@ def show_band_details(band_id):
     """
     Todo - Shows band details
     """
+    # band = Band.query.get_or_404(band_id)
     # If logged in - band, setlists, upcoming_shows
     # If not - band
 
@@ -382,10 +399,10 @@ def search_page():
     search = request.args.get("q")
 
     if not search:
-        return render_template("users/search.html")
+        return render_template("band/search.html")
     else:
         url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
-        band_results = requests.get(
+        json_res = requests.get(
             url,
             headers={
                 "Accept": "application/json",
@@ -393,8 +410,11 @@ def search_page():
             },
             params=[("artistName", search)],
         )
+
+        res = json_res.json()
+
     return render_template(
-        "/band/search.html", search=search, band_results=band_results
+        "/band/search.html", search=search, band_results=res["artist"]
     )
 
 
