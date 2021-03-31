@@ -30,6 +30,7 @@ from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 load_dotenv()
 
+
 app = Flask(__name__)
 
 
