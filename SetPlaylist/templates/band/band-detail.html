@@ -39,10 +39,15 @@ endblock %} {% block content %}
 <section id="upcoming">
     <div id="upcoming_shows">
         <h3>Upcoming Shows</h3>
-        {% for show in upcoming_shows %}
-        <!-- TODO: Check these based on data -->
-        <!-- <a href="#">{{show.date}} - {{show.venue}} - {{show.location}}</a>-->
-        {% %}
+        <ul>
+            {% for show in upcoming_shows %}
+            <a href="{{show.url}}"
+                >{{show.datetime[:9]}} - {{show.venue.name}} -
+                {{show.venue.city}}, {{show.venue.region}},
+                {{show.venue.country}}</a
+            >
+            {% endfor %}
+        </ul>
     </div>
 </section>
 {% endblock content %}

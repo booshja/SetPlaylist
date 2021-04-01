@@ -1,5 +1,5 @@
 {% extends 'login-password.html' %} {% block form %}
-<form action="#" id="login_form">
+<form action="/login" method="post" id="login-form"></form>
     {{form.hidden_tag()}} {% for field in form if field.widget.input_type !=
     'hidden %} {% for error in field.errors %}
     <span>{{error}}</span>

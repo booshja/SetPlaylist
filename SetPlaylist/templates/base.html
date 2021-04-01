@@ -15,8 +15,12 @@
         <header>
             <nav>
                 <div>
-                    <a href="/"
-                        ><img
+                    {% if g.user %}
+                    <a href="/home">
+                    {% else %}
+                    <a href="/">
+                    {% endif %}
+                        <img
                             src="static/svg/SetPlaylist_Logo.svg"
                             alt="SetPlaylist Logo Link"
                     /></a>
@@ -24,7 +28,7 @@
                 <ul>
                     {% if not g.user %}
                     <li>
-                        <form action="#">
+                        <form action="/band/search">
                             <input
                                 type="text"
                                 name="q"
@@ -34,26 +38,24 @@
                         </form>
                     </li>
                     <li>
-                        <a href="#">Sign Up</a>
+                        <a href="/register">Sign Up</a>
                     </li>
                     <li>
-                        <a href="#">Log In</a>
+                        <a href="/login">Log In</a>
                     </li>
                     {% else %}
-                    <li><a href="#">Home</a></li>
-                    <li><a href="#">My Playlists</a></li>
-                    <li><a href="#">{{g.user.username}}</a></li>
                     <li>
                         <form action="/band/search">
                             <input
-                                name="q"
-                                placeholder="Search Bands"
-                                id="search"
+                            name="q"
+                            placeholder="Search Bands"
+                            id="search"
                             />
                         </form>
                     </li>
+                    <li><a href="/home">{{g.user.username}}</a></li>
                     <li>
-                        <a href="#">Log Out</a>
+                        <form action="/logout" method="post"><button type="submit">Log Out</button></form>
                     </li>
                     {% endif %}
                 </ul>
@@ -70,16 +72,15 @@
                                 alt="SetPlaylist Logo Link"
                         /></a>
                     </li>
-                    <li><a href="#">Search</a></li>
+                    <li><a href="/search">Search</a></li>
                     {% if not g.user %}
-                    <li><a href="#">Create Account</a></li>
+                    <li><a href="/register">Create Account</a></li>
                     {% else %}
-                    <li><a href="#">My Account</a></li>
-                    <li><a href="#">My Playlists</a></li>
+                    <li><a href="/home">Home</a></li>
                     {% endif %}
-                    <li><a href="#">Contact</a></li>
+                    <li><a href="mailto:jacob.andes@gmail.com">Contact</a></li>
                     <li>
-                        <a href="#"
+                        <a href="https://www.spotiy.com"
                             ><img
                                 src="static/svg/Spotify_Logo_RGB_White.svg"
                                 alt="Spotify Logo Link"

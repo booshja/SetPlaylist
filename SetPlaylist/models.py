@@ -235,6 +235,24 @@ class Band(db.Model):
 
     photo = db.Column(db.Text)
 
+    @classmethod
+    def prep_band_name(name):
+        """
+        - Check band name for any non-URL characters
+        - Modifies name if there are
+        - Returns modified/checked name
+        """
+        if " " in name:
+            name = name.replace(" ", "%20")
+        if "/" in name:
+            name = name.replace("/", "%252F")
+        if "?" in name:
+            name = name.replace("?", "%253F")
+        if "*" in name:
+            name = name.replace("*", "%252A")
+        if '"' in name:
+            name = name.replace('"', "%27C")
+
     def __repr__(self):
         """
         A more readable representation of the instance

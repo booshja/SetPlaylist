@@ -43,6 +43,7 @@ app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "secret!")
 
 CURR_USER_KEY = os.environ.get("CURR_USER_KEY")
+spotify = spotipy.Spotify()
 
 toolbar = DebugToolbarExtension(app)
 
@@ -139,10 +140,10 @@ def login():
     return render_template("/auth/login.html", form=form, title="Login")
 
 
-@app.route("/logout")
+@app.route("/logout", methods=["POST"])
 def logout():
     """
-    GET ROUTE:
+    POST ROUTE:
     - Handle logout of user
     """
     session_logout()
@@ -358,12 +359,44 @@ def edit_user(user_id):
 ###############
 
 
-@app.route("/band/<band_id>")
-def show_band_details(band_id):
+@app.route("/band/<band_name>")
+def show_band_details(band_name):
     """
     Todo - Shows band details
     """
-    # band = Band.query.get_or_404(band_id)
+    band = Band.query.filter_by(name=band_name).first()
+
+    if band is None:
+        url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+        res = requests.get(
+            url,
+            headers={
+                "Accept": "application/json",
+                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+            },
+            params=[("artistName", band_name)],
+        ).json()
+
+        fm_band = res["artists"][0]
+
+        # TODO: Fix Spotify
+        # Can't use spotify.artist, this requires a band uri or url, not a band name
+        sp_band = spotify.artist(fm_band.name)
+
+        search_name = Band.prep_band_name(fm_band.name)
+
+        url = (
+            os.environ.get("BANDSINTOWN_BASE_URL")
+            + "/artists"
+            + search_name
+            + "/events"
+        )
+        upcoming_shows = requests.get()
+
+    return render_template(
+        "/band/search.html", band=sp_band, upcoming_shows=upcoming_shows
+    )
+
     # If logged in - band, setlists, upcoming_shows
     # If not - band
 
@@ -403,29 +436,18 @@ def search_page():
         return render_template("band/search.html")
     else:
         url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
-        json_res = requests.get(
+        res = requests.get(
             url,
             headers={
                 "Accept": "application/json",
                 "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
             },
             params=[("artistName", search)],
-        )
-
-        res = json_res.json()
+        ).json()
 
     return render_template(
         "/band/search.html", search=search, band_results=res["artist"]
     )
-
-
-@app.route("/band/search/<q>")
-def search_results(q):
-    """
-    GET ROUTE:
-    - Call Setlist.fm API for search
-    - Display search results
-    """
 
 
 ###################
