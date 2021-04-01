@@ -9,6 +9,12 @@ endblock title %} {% block content %}
             </div>
         </div>
     </section>
+    <section id="errors">
+        {% for category, message in get_flashed_messages(with_categories=True)
+        %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </section>
     <section id="band_search">
         <div id="search_bands">
             <h3>Search Bands</h3>

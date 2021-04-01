@@ -10,6 +10,12 @@ memories, one playlist at a time! {% endblock title %} {% block content %}
             </div>
         </div>
     </section>
+    <section id="errors">
+        {% for category, message in get_flashed_messages(with_categories=True)
+        %}
+        <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    </section>
     <section id="info">
         <div id="how_it_works">
             <div>
