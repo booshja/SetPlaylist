@@ -24,7 +24,8 @@ from models import (
     connect_db,
     db,
 )
-from spotipy.oath2 import SpotifyClientCredentials
+from custom_cache import CustomCache
+from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
@@ -43,27 +44,14 @@ app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "secret!")
 
 CURR_USER_KEY = os.environ.get("CURR_USER_KEY")
-spotify = spotipy.Spotify()
 
 toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
-##############################
-# User Login/Logout/Register ##########
-##############################
-
-
-@app.before_request
-def add_user_to_g():
-    """
-    If user logged in, add to Flask global
-    """
-
-    if CURR_USER_KEY in session:
-        g.user = User.query.get(session[CURR_USER_KEY])
-    else:
-        g.user = None
+##################
+# Global Methods ######################
+##################
 
 
 def session_login(user):
@@ -79,9 +67,37 @@ def session_logout(user):
     """
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+        del session["token"]
 
 
-@app.route("/register", methods=["GET", "POST"])
+##############################
+# User Login/Logout/Register ##########
+##############################
+
+
+@app.before_request
+def add_to_g():
+    """
+    If user logged in, add to Flask global
+    """
+
+    if CURR_USER_KEY in session:
+        g.user = User.query.get(session(CURR_USER_KEY))
+        g.cache_handler = CustomCache()
+        g.auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=g.cache_handler)
+        if g.auth_manager.validate_token(g.cache_handler.get_cached_token()):
+            g.spotify = spotipy.Spotify(auth_manager=g.auth_manager)
+    else:
+        g.user = None
+        g.spotify = spotipy.Spotify(
+            auth_manager=SpotifyClientCredentials(
+                client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
+                client_secret=os.environ.get("SPOTIPY_CLIENT_SECRET"),
+            )
+        )
+
+
+@app.route("/register", methods=["POST"])
 def register():
     """
     GET ROUTE:
@@ -98,6 +114,7 @@ def register():
     form = RegisterForm()
 
     if form.validate_on_submit():
+        # POST ROUTE FOR REGISTRATION FORM
         try:
             user = User.register(
                 username=form.username.data,
@@ -105,6 +122,8 @@ def register():
                 email=form.email.data,
                 secret_question=form.secret_question.data,
                 secret_answer=form.secret_answer.data,
+                spotify_connected=False,
+                spotify_user_id=None,
             )
             db.session.commit()
         except IntegrityError:
@@ -114,8 +133,38 @@ def register():
         session_login(user)
 
         return redirect("/home")
-    else:
-        return render_template("/auth/register.html", form=form, title="Register")
+
+    # Spotify authorization flow
+    g.cache_handler = CustomCache()
+    auth_manager = SpotifyOAuth(
+        client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
+        client_secret=os.environ.get("SPOTIPY_CLIENT_SECRET"),
+        redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
+        scope=os.environ.get("SPOTIPY_SCOPE"),
+    )
+
+    # If redirect back from Spotify
+    if request.args.get("code"):
+        auth_manager.get_access_token(request.args.get("code"))
+        return redirect("/home")
+
+    # Send user to login with Spotify
+    if not auth_manager.validate_token(g.cache_handler.get_cached_token()):
+        auth_url = auth_manager.get_authorize_url()
+        return redirect(auth_url)
+
+    g.spotify = spotipy.Spotify(auth_manager=auth_manager)
+    return redirect("/home")
+
+
+@app.route("/register", methods=["GET"])
+def show_registration_form():
+    """
+    GET ROUTE:
+    - Show registration form
+    """
+    form = RegisterForm()
+    return render_template("auth/register.html", form=form, title="Register")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -148,20 +197,6 @@ def logout():
     """
     session_logout()
     return redirect("/")
-
-
-@app.route("/auth")
-def spotify_authentication_return():
-    """
-    GET ROUTE:
-    - Handle Spotify response to User Spotify login
-    - Redirect to '/home'
-    """
-    if not g.user:
-        flash("Access Unathorized")
-        return redirect("/")
-
-    return redirect("/home")
 
 
 #########################
@@ -381,7 +416,7 @@ def show_band_details(band_name):
 
         # TODO: Fix Spotify
         # Can't use spotify.artist, this requires a band uri or url, not a band name
-        sp_band = spotify.artist(fm_band.name)
+        sp_band = g.spotify.artist(fm_band.name)
 
         search_name = Band.prep_band_name(fm_band.name)
 

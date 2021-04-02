@@ -79,15 +79,16 @@ class User(db.Model):
         cls,
         username,
         password,
+        email,
         secret_question,
         secret_answer,
         spotify_connected,
-        spotify_user_token,
         spotify_user_id,
     ):
         """
         - Sign up user
-        - Hash password and add user to system
+        - Hash password & secret question
+        - Add user to database
         """
         hashed_pwd = bcrypt.generate_password_hash(password).decode("UTF-8")
         hashed_answer = bcrypt.generate_password_hash(secret_answer).decode("UTF-8")
@@ -95,10 +96,10 @@ class User(db.Model):
         user = cls(
             username=username,
             password=hashed_pwd,
+            email=email,
             secret_question=secret_question,
             secret_answer=hashed_answer,
             spotify_connected=spotify_connected,
-            spotify_user_token=spotify_user_token,
             spotify_user_id=spotify_user_id,
         )
 

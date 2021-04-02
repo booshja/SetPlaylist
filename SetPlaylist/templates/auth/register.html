@@ -1,8 +1,8 @@
-{% extends 'register-edit.html' %} {% block form %}
+{% extends 'auth/register-edit.html' %} {% block form %}
 <form id="register_form">
     {{ form.hidden_tag() }} {% for field in form if field.widget.input_type !=
     'hidden' %} {% for error in field.errors %}
-    <span>{{ error}}</span>
+    <span>{{ error }}</span>
     {% endfor %} {{ field(placeholder=field.label.text) }} {% endfor %}
     <button type="submit">Register</button>
 </form>
