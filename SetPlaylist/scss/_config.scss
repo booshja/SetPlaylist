@@ -9,24 +9,24 @@ $card-color: #3b5262;
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+}
 
-    @mixin media-md {
-        @media screen and (min-width: 768px) {
-            @content;
-        }
+@mixin media-md {
+    @media screen and (min-width: 768px) {
+        @content;
     }
-    @mixin media-lg {
-        @media screen and (min-width: 1024px) {
-            @content;
-        }
+}
+@mixin media-lg {
+    @media screen and (min-width: 1024px) {
+        @content;
     }
-    @mixin media-xl {
-        @media screen and (min-width: 1600px) {
-            @content;
-        }
+}
+@mixin media-xl {
+    @media screen and (min-width: 1600px) {
+        @content;
     }
+}
 
-    @mixin transition-ease {
-        transition: all 500ms ease-in-out;
-    }
+@mixin transition-ease {
+    transition: all 500ms ease-in-out;
 }

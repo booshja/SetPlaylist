@@ -12,8 +12,7 @@
         <title>{% block title %}{% endblock title %}</title>
     </head>
     <body>
-        <header>
-            <nav>
+        <header class="navbar">
                 <div>
                     {% if g.user %}
                     <a href="/home">
@@ -25,9 +24,13 @@
                             alt="SetPlaylist Logo Link"
                     /></a>
                 </div>
-                <ul>
+                <div class="menu-btn">
+                    <span class="menu-btn__burger"></span>
+                </div>
+                <nav class="nav">
+                <ul class="menu-nav">
                     {% if not g.user %}
-                    <li>
+                    <li class="menu-nav__item">
                         <form action="/band/search">
                             <input
                                 type="text"
@@ -37,15 +40,15 @@
                             />
                         </form>
                     </li>
-                    <li>
-                        <a href="/register">Sign Up</a>
+                    <li class="menu-nav__item">
+                        <a href="/register" class="menu-nav__link">Sign Up</a>
                     </li>
-                    <li>
-                        <a href="/login">Log In</a>
+                    <li class="menu-nav__item">
+                        <a href="/login" class="menu-nav__link">Log In</a>
                     </li>
                     {% else %}
-                    <li>
-                        <form action="/band/search">
+                    <li class="menu-nav__item">
+                        <form action="/band/search" class="menu-nav__search">
                             <input
                             name="q"
                             placeholder="Search Bands"
@@ -53,9 +56,9 @@
                             />
                         </form>
                     </li>
-                    <li><a href="/home">{{g.user.username}}</a></li>
-                    <li>
-                        <form action="/logout" method="post"><button type="submit">Log Out</button></form>
+                    <li class="menu-nav__item"><a href="/home" class="menu-nav__link">{{g.user.username}}</a></li>
+                    <li class="menu-nav__item">
+                        <form action="/logout" method="post" class="menu-nav__link"><button type="submit">Log Out</button></form>
                     </li>
                     {% endif %}
                 </ul>
@@ -63,34 +66,38 @@
         </header>
         {% block content %}{% endblock content %}
         <footer>
-            <div id="footer">
-                <ul>
-                    <li>
+            <div class="footer">
+                <div class="footer__body">
+                    <div class="footer__links">
+                        <ul>
+                            <li><a href="/band/search">Search</a></li>
+                            {% if not g.user %}
+                            <li><a href="/register">Create Account</a></li>
+                            {% else %}
+                            <li><a href="/home">Home</a></li>
+                            {% endif %}
+                            <li><a href="mailto:jacob.andes@gmail.com">Contact</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer__logos">
                         <a href="/"
-                            ><img
-                                src="static/svg/SetPlaylist_Logo.svg"
-                                alt="SetPlaylist Logo Link"
+                        ><img
+                        src="static/svg/SetPlaylist_Logo.svg"
+                        alt="SetPlaylist Logo Link"
+                        class="footer__logos__logo"
                         /></a>
-                    </li>
-                    <li><a href="/band/search">Search</a></li>
-                    {% if not g.user %}
-                    <li><a href="/register">Create Account</a></li>
-                    {% else %}
-                    <li><a href="/home">Home</a></li>
-                    {% endif %}
-                    <li><a href="mailto:jacob.andes@gmail.com">Contact</a></li>
-                    <li>
                         <a href="https://www.spotiy.com"
-                            ><img
-                                src="static/svg/Spotify_Logo_RGB_White.svg"
-                                alt="Spotify Logo Link"
-                        /></a>
-                    </li>
-                </ul>
+                        ><img
+                            src="static/svg/Spotify_Logo_RGB_White.svg"
+                            alt="Spotify Logo Link"
+                            class="footer__logos__logo"
+                    /></a>
+                </div>
             </div>
-            <div id="copyright">
+            <div class="footer__copyright">
                 <p>&#169 Jacob Andes, 2021</p>
             </div>
+        </div>
         </footer>
     </body>
 </html>

@@ -1,0 +1,177 @@
+@import "config";
+
+main {
+    display: flex;
+    flex-direction: column;
+    padding-top: 75px;
+    flex: 1;
+}
+
+.error {
+    background-color: #9c0000;
+    border: 2px solid #ff0000;
+    border-radius: 4px;
+}
+
+.landing-hero {
+    background-image: url("../img/yvette-de-wit-NYrVisodQ2M-unsplash.jpg");
+    background-size: cover;
+    background-repeat: no-cover;
+    background-position: center;
+    border-radius: 4px;
+    color: $text-dark;
+    height: 300px;
+
+    &__title-div {
+        background-color: $div-color;
+        border-radius: 4px;
+        position: relative;
+        top: 5%;
+        left: 5%;
+        padding: 1rem;
+        width: 40%;
+
+        &__h1 {
+            font-weight: 700;
+            font-size: 1.5rem;
+        }
+
+        &__p {
+            padding-top: 0.5rem;
+        }
+    }
+
+    &__cta {
+        background-color: $div-color;
+        border-radius: 6px;
+        border: 2px solid $text-dark;
+        padding: 0.5rem;
+        width: 25%;
+        position: relative;
+        top: 10%;
+        left: 5%;
+        display: flex;
+        justify-content: center;
+
+        &__link {
+            color: $text-dark;
+            font-weight: 700;
+        }
+    }
+}
+
+.how {
+    border-radius: 4px;
+    color: $text-dark;
+    margin-top: 25px;
+    background-color: $div-color;
+
+    &__headline {
+        text-align: center;
+        font-size: 3rem;
+        font-weight: 700;
+        padding-top: 2rem;
+    }
+
+    &__body {
+        display: flex;
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+
+        div {
+            width: 40%;
+            font-size: 2rem;
+            margin: 2rem 0 2rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            span {
+                font-size: 4rem;
+                font-weight: 700;
+
+                i {
+                    margin-bottom: 1rem;
+                }
+            }
+
+            p {
+                width: 50vw;
+            }
+        }
+
+        &__setlist__text {
+            margin: 0.25rem 0 0.25rem 0;
+            font-weight: 700;
+            font-style: italic;
+        }
+    }
+}
+
+.band-search {
+    background-color: $div-color;
+    margin-top: 25px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    &__headline {
+        color: $text-dark;
+        font-weight: 700;
+        text-align: center;
+        padding: 1rem 0 0.5rem 0;
+    }
+
+    &__input {
+        padding: 0.5rem 0 1rem 0;
+
+        input {
+            width: 70vw;
+            height: 30px;
+            font-size: 1.25rem;
+        }
+    }
+}
+
+.our-favs {
+    background-color: $div-color;
+    margin: 25px 0 25px 0;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    color: $text-dark;
+
+    &__headline {
+        text-align: center;
+        font-weight: 700;
+        padding: 1rem 0 0.5rem 0;
+    }
+
+    &__setlists {
+        display: flex;
+        justify-content: space-around;
+        padding: 0.5rem 0 1rem 0;
+
+        &__links {
+            display: flex;
+        }
+    }
+
+    &__setlist {
+        display: flex;
+        &__text {
+            padding: 0.25rem 0 0.25rem 0;
+            text-align: center;
+        }
+
+        &__link {
+            color: $text-dark;
+            border: 1px solid $text-dark;
+            border-radius: 4px;
+            padding: 5px;
+            margin-top: 500px;
+        }
+    }
+}

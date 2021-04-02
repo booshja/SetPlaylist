@@ -1,12 +1,17 @@
-@import "config", "nav", "footer";
+@import "config", "footer", "menu", "landing";
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&family=Sen:wght@400;700&display=swap");
 
 body {
     background-image: url("../img/emma-paillex-dzrclo52oxk-unsplash.jpg");
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
     color: $text-light;
-    height: 100vh;
+    height: 100%;
     font-family: "Poppins", sans-serif;
     line-height: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 h1,
