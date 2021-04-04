@@ -673,6 +673,17 @@ footer .footer__logos img {
   height: 2rem;
 }
 
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.edit {
+  background-image: url("/static/img/elena-mozhvilo-RhXAO8OXyDY-unsplash.jpg");
+}
+
 body {
   background-image: url("../img/emma-paillex-dzrclo52oxk-unsplash.jpg");
   background-size: cover;
@@ -690,21 +701,6 @@ body {
   -webkit-box-direction: normal;
       -ms-flex-direction: column;
           flex-direction: column;
-}
-
-h1,
-h2,
-h3 {
-  font-weight: 400;
-}
-
-a {
-  color: #3b5262;
-  text-decoration: none;
-}
-
-ul {
-  list-style-type: none;
 }
 
 header {
@@ -732,6 +728,21 @@ main {
   -webkit-box-flex: 1;
       -ms-flex: 1;
           flex: 1;
+}
+
+h1,
+h2,
+h3 {
+  font-weight: 400;
+}
+
+a {
+  color: #3b5262;
+  text-decoration: none;
+}
+
+ul {
+  list-style-type: none;
 }
 
 .container {

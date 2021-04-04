@@ -409,7 +409,9 @@ def edit_user(user_id):
         else:
             form.password.errors.append("Incorrect Password")
 
-    return render_template("/user/edit.html", form=form, title="Edit User")
+    return render_template(
+        "/user/edit.html", form=form, title="Edit User", q_display=""
+    )
 
 
 ###############
