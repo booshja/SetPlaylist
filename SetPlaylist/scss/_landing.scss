@@ -1,50 +1,7 @@
 @import "config";
 
-.landing-hero {
+.landing {
     background-image: url("../img/yvette-de-wit-NYrVisodQ2M-unsplash.jpg");
-    background-size: cover;
-    background-repeat: no-cover;
-    background-position: center;
-    border-radius: 4px;
-    color: $text-dark;
-    height: 300px;
-
-    &__title-div {
-        background-color: $div-color;
-        border-radius: 4px;
-        position: relative;
-        top: 5%;
-        left: 5%;
-        padding: 1rem;
-        width: 40%;
-
-        &__h1 {
-            font-weight: 700;
-            font-size: 1.5rem;
-        }
-
-        &__p {
-            padding-top: 0.5rem;
-        }
-    }
-
-    &__cta {
-        background-color: $div-color;
-        border-radius: 6px;
-        border: 2px solid $text-dark;
-        padding: 0.5rem;
-        width: 25%;
-        position: relative;
-        top: 10%;
-        left: 5%;
-        display: flex;
-        justify-content: center;
-
-        &__link {
-            color: $text-dark;
-            font-weight: 700;
-        }
-    }
 }
 
 .how {
@@ -97,30 +54,6 @@
 
 #how-body-top {
     margin-top: 2rem;
-}
-
-.band-search {
-    margin-top: 25px;
-    flex-direction: column;
-    align-items: center;
-
-    &__headline {
-        color: $text-dark;
-        font-weight: 700;
-        font-size: 2rem;
-        text-align: center;
-        padding: 1rem 0 0.5rem 0;
-    }
-
-    &__input {
-        padding: 0.5rem 0 1rem 0;
-
-        input {
-            width: 70vw;
-            height: 30px;
-            font-size: 1.25rem;
-        }
-    }
 }
 
 .our-favs {

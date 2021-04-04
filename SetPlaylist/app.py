@@ -342,11 +342,17 @@ def homepage():
     - If user logged out, redirect to '/'
     - If logged in, return logged in homepage
     """
-    if not g.user:
-        return redirect("/")
-    else:
-        recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
-        return render_template("/user/home.html", recent_playlists=recent_playlists)
+    # if not g.user:
+    #     return redirect("/")
+    # else:
+    #     recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
+    recent_playlists = [
+        "coding_chill",
+        "coding_hip_hop",
+        "coding_heavy",
+        "Daughters at Neumos",
+    ]
+    return render_template("/user/home.html", recent_playlists=recent_playlists)
 
 
 @app.route("/user/<int:user_id>/edit", methods=["GET", "POST"])
