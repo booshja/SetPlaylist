@@ -128,7 +128,9 @@ def register():
             db.session.commit()
         except IntegrityError:
             form.username.errors.append("Username not available")
-            return render_template("auth.html", form=form, title="Register")
+            return render_template(
+                "auth.html", form=form, title="Register", q_display=""
+            )
 
         session_login(user)
 
@@ -164,7 +166,7 @@ def show_registration_form():
     - Show registration form
     """
     form = RegisterForm()
-    return render_template("auth.html", form=form, title="Register")
+    return render_template("auth.html", form=form, title="Register", q_display="")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -186,7 +188,7 @@ def login():
             return redirect("/")
         form.username.errors.append("Invalid username/password")
 
-    return render_template("auth.html", form=form, title="Login")
+    return render_template("auth.html", form=form, title="Login", q_display="")
 
 
 @app.route("/logout", methods=["POST"])
@@ -228,15 +230,19 @@ def forgot_password_check_username():
             user = User.query.filter_by(username=form.username.data).one()
         except NoResultFound or MultipleResultsFound:
             form.username.errors.append("Username not found")
-            return render_template("auth.html", title="Forgot Password", form=form)
+            return render_template(
+                "auth.html", title="Forgot Password", form=form, q_display=""
+            )
 
         session["password_reset"] = True
         return redirect(f"/forgot/{user.id}")
 
-    return render_template("auth.html", title="Forgot Password", form=form)
+    return render_template(
+        "auth.html", title="Forgot Password", form=form, q_display=""
+    )
 
 
-@app.route("/forgot/<user_id>", methods=["GET", "POST"])
+@app.route("/forgot/<int:user_id>", methods=["GET", "POST"])
 def forgot_password_check_secret_question(user_id):
     """
     GET ROUTE:
@@ -248,24 +254,26 @@ def forgot_password_check_secret_question(user_id):
     """
     form = ForgotPassAnswer()
 
-    # if not session.get("password_reset"):
-    #     flash("Access Unauthorized")
-    #     return redirect("/")
+    if not session.get("password_reset"):
+        flash("Access Unauthorized")
+        return redirect("/")
 
-    # user = User.query.get_or_404(user_id)
+    user = User.query.get_or_404(user_id)
 
-    # if form.validate_on_submit():
-    #     if User.authenticate_secret_answer(user.username, form.secret_answer.data):
-    #         return redirect("/forgot/<user_id>/new")
-    #     else:
-    #         form.secret_answer.errors.append("Invalid secret answer")
+    if form.validate_on_submit():
+        if User.authenticate_secret_answer(user.username, form.secret_answer.data):
+            return redirect("/forgot/<user_id>/new")
+        else:
+            form.secret_answer.errors.append("Invalid secret answer")
 
-    # form.secret_question.data = user.secret_question
+    form.secret_question.data = user.secret_question
 
-    return render_template("/auth.html", form=form, title="Forgot Password")
+    return render_template(
+        "/auth.html", form=form, title="Forgot Password", q_display="q_display"
+    )
 
 
-@app.route("/forgot/<user_id>/new", methods=["GET", "POST"])
+@app.route("/forgot/<int:user_id>/new", methods=["GET", "POST"])
 def forgot_password_new_password(user_id):
     """
     GET ROUTE:
@@ -299,7 +307,7 @@ def forgot_password_new_password(user_id):
             form.new_password.errors.append("Passwords must match")
             return render_template("password.html", title="Reset Password", form=form)
 
-    return render_template("/auth/password.html", form=form, title="Reset Password")
+    return render_template("auth.html", form=form, title="Reset Password", q_display="")
 
 
 ################
@@ -339,7 +347,7 @@ def homepage():
         return render_template("/user/home.html", recent_playlists=recent_playlists)
 
 
-@app.route("/user/<user_id>/edit", methods=["GET", "POST"])
+@app.route("/user/<int:user_id>/edit", methods=["GET", "POST"])
 def edit_user(user_id):
     """
     GET ROUTE:
@@ -443,7 +451,7 @@ def show_band_details(band_name):
     # If not - band
 
 
-@app.route("/band/<band_id>/setlist/<offset>")
+@app.route("/band/<int:band_id>/setlist/<offset>")
 def return_band_setlists_paginate(band_id, offset):
     """
     Todo - Shows further results for setlist results
@@ -452,7 +460,7 @@ def return_band_setlists_paginate(band_id, offset):
     # Do I need this? Could just pass entire list and have JS paginate
 
 
-@app.route("/band/<band_id>/shows/<offset>")
+@app.route("/band/<int:band_id>/shows/<offset>")
 def return_band_shows_paginate(band_id, offset):
     """
     Todo - Shows further results for show results
@@ -505,7 +513,7 @@ def show_setlist():
     # setlist (Playlist object that has not been saved to the db)
 
 
-@app.route("/playlist/<playlist_id>")
+@app.route("/playlist/<int:playlist_id>")
 def show_created_playlist():
     """
     Todo - Shows the setlist that was created
@@ -513,7 +521,7 @@ def show_created_playlist():
     # playlist (Playlist object saved to db)
 
 
-@app.route("/playlist/<band_id>/hype")
+@app.route("/playlist/<int:band_id>/hype")
 def show_hype_setlist():
     """
     Todo - Shows the setlist created from band's top songs

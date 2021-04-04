@@ -603,7 +603,17 @@ footer .footer__logos img {
 
 .auth-box__form__buttons__btn {
   margin-right: 1rem;
-  padding: 10px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #3b5262;
+  -ms-flex-item-align: center;
+      -ms-grid-row-align: center;
+      align-self: center;
+}
+
+.submit {
+  font-family: "Poppins", sans-serif;
+  padding: 5px;
   border: 2px solid #000000;
   border-radius: 4px;
   color: #ffffff;
@@ -611,8 +621,8 @@ footer .footer__logos img {
   font-size: 1rem;
 }
 
-.auth-box__form__buttons__btn button {
-  font-family: "Poppins";
+.submit:hover {
+  cursor: pointer;
 }
 
 .login-text {
@@ -625,7 +635,7 @@ footer .footer__logos img {
   color: #3b5262;
 }
 
-#secret_question {
+.q_display {
   pointer-events: none;
   border: none;
   background-color: #cebaa5;
