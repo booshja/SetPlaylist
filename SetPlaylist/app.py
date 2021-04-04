@@ -300,12 +300,14 @@ def forgot_password_new_password(user_id):
             db.add(user)
             db.commit()
 
-            g.password_reset = False
+            session.pop("password_reset")
 
             return redirect("/login")
         else:
             form.new_password.errors.append("Passwords must match")
-            return render_template("password.html", title="Reset Password", form=form)
+            return render_template(
+                "auth.html", title="Reset Password", form=form, q_display=""
+            )
 
     return render_template("auth.html", form=form, title="Reset Password", q_display="")
 
