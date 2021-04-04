@@ -20,7 +20,7 @@
                     <a href="/">
                     {% endif %}
                         <img
-                            src="static/svg/SetPlaylist_Logo.svg"
+                            src="/static/svg/SetPlaylist_Logo.svg"
                             alt="SetPlaylist Logo Link"
                     /></a>
                 </div>
@@ -31,7 +31,7 @@
                 <ul class="menu-nav">
                     {% if not g.user %}
                     <li class="menu-nav__item">
-                        <form action="/band/search">
+                        <form class="menu-nav__item__form" action="/band/search">
                             <input
                                 type="text"
                                 name="q"
@@ -39,6 +39,7 @@
                                 id="search"
                             />
                         </form>
+                        <a href="/search" class="menu-nav__link">Search</a>
                     </li>
                     <li class="menu-nav__item">
                         <a href="/register" class="menu-nav__link">Sign Up</a>
@@ -64,7 +65,9 @@
                 </ul>
             </nav>
         </header>
+        <main>
         {% block content %}{% endblock content %}
+        </main>
         <footer>
             <div class="footer">
                 <div class="footer__body">
@@ -82,22 +85,23 @@
                     <div class="footer__logos">
                         <a href="/"
                         ><img
-                        src="static/svg/SetPlaylist_Logo.svg"
+                        src="/static/svg/SetPlaylist_Logo.svg"
                         alt="SetPlaylist Logo Link"
                         class="footer__logos__logo"
                         /></a>
                         <a href="https://www.spotiy.com"
                         ><img
-                            src="static/svg/Spotify_Logo_RGB_White.svg"
+                            src="/static/svg/Spotify_Logo_RGB_White.svg"
                             alt="Spotify Logo Link"
                             class="footer__logos__logo"
-                    /></a>
+                        /></a>
+                    </div>
+                </div>
+                <div class="footer__copyright">
+                    <p>&#169 Jacob Andes, 2021</p>
                 </div>
             </div>
-            <div class="footer__copyright">
-                <p>&#169 Jacob Andes, 2021</p>
-            </div>
-        </div>
         </footer>
+        <script src="/static/js/main.js"></script>
     </body>
 </html>

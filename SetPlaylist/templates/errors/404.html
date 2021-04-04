@@ -1,9 +1,4 @@
-{% extends 'base.html' %} {% block title %}404 - Page Not Found{% endblock title
-%} {% block content %}
-<div id="404_error">
-    <div id="404_error__feedback">
-        <h2>Something doesn't sound quite right...</h2>
-        <a href="/">Let's hear that one again</a>
-    </div>
-</div>
-{% endblock content %}
+{% extends '/errors/error.html' %} {% block title %}404 - Page Not Found{%
+endblock title %} {% block class_error %}a404{% endblock class_error %} {% block
+headline %}Something doesn't sound quite right...{% endblock headline %} {%
+block link_text %}hear that one again{% endblock link_text %}

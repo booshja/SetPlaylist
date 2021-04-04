@@ -1,0 +1,29 @@
+{% extends 'base.html' %} {% block title %}{{title}} - SetPlaylist{% endblock
+title %} {% block content %}
+<div class="auth-box container">
+    <h2 class="auth-box__headline">{{title}}</h2>
+    <form method="post" class="auth-box__form">
+        {{form.hidden_tag()}} {% for field in form if field.widget.input_type !=
+        'hidden' %} {{field.label(class_="auth-box__form__label")}}
+        {{field(class_="auth-box__form__input", placeholder=field.label.text)}}
+        {% for error in field.errors %}
+        <span>{{error}}</span>
+        {% endfor %} {% endfor %}
+        <div class="auth-box__form__buttons">
+            <a href="/" class="auth-box__form__buttons__btn">Cancel</a>
+            <button type="submit" class="auth-box__form__buttons__btn">
+                {% if title=="Forgot Password" %}Submit{% else %}{{title}}{%
+                endif %}
+            </button>
+        </div>
+    </form>
+    {% if title == "Login" %}
+    <h5 class="login-text">
+        Don't have an account? <a href="/register">Register</a>
+    </h5>
+    <h5 class="login-text">
+        Forgot password? <a href="/forgot">Click here</a>
+    </h5>
+    {% endif %}
+</div>
+{% endblock content %}

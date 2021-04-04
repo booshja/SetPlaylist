@@ -109,6 +109,10 @@
             &.active > a {
                 font-weight: 700;
             }
+
+            &__form {
+                display: none;
+            }
         }
 
         &__link {
@@ -118,6 +122,7 @@
             padding: 2rem 0;
             font-weight: 300;
             @include transition-ease;
+            color: $text-light;
 
             &:hover {
                 color: $nav-color;

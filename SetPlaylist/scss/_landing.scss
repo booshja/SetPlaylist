@@ -1,18 +1,5 @@
 @import "config";
 
-main {
-    display: flex;
-    flex-direction: column;
-    padding-top: 75px;
-    flex: 1;
-}
-
-.error {
-    background-color: #9c0000;
-    border: 2px solid #ff0000;
-    border-radius: 4px;
-}
-
 .landing-hero {
     background-image: url("../img/yvette-de-wit-NYrVisodQ2M-unsplash.jpg");
     background-size: cover;
@@ -61,14 +48,12 @@ main {
 }
 
 .how {
-    border-radius: 4px;
-    color: $text-dark;
     margin-top: 25px;
-    background-color: $div-color;
+    flex-direction: column;
 
     &__headline {
         text-align: center;
-        font-size: 3rem;
+        font-size: 2rem;
         font-weight: 700;
         padding-top: 2rem;
     }
@@ -78,11 +63,12 @@ main {
         flex-direction: column;
         text-align: center;
         align-items: center;
+        padding-bottom: 1rem;
 
         div {
             width: 40%;
             font-size: 2rem;
-            margin: 2rem 0 2rem 0;
+            margin: 1rem 0 1rem 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -109,17 +95,19 @@ main {
     }
 }
 
+#how-body-top {
+    margin-top: 2rem;
+}
+
 .band-search {
-    background-color: $div-color;
     margin-top: 25px;
-    border-radius: 4px;
-    display: flex;
     flex-direction: column;
     align-items: center;
 
     &__headline {
         color: $text-dark;
         font-weight: 700;
+        font-size: 2rem;
         text-align: center;
         padding: 1rem 0 0.5rem 0;
     }
@@ -136,42 +124,51 @@ main {
 }
 
 .our-favs {
-    background-color: $div-color;
     margin: 25px 0 25px 0;
-    border-radius: 4px;
-    display: flex;
     flex-direction: column;
     color: $text-dark;
 
     &__headline {
         text-align: center;
         font-weight: 700;
+        font-size: 2rem;
         padding: 1rem 0 0.5rem 0;
     }
 
-    &__setlists {
+    &__sets {
         display: flex;
-        justify-content: space-around;
-        padding: 0.5rem 0 1rem 0;
+        justify-content: space-evenly;
+        padding: 0.5rem 0 1.5rem 0;
 
-        &__links {
+        &__set {
             display: flex;
+            flex-direction: column;
+
+            h5 {
+                font-weight: 400;
+            }
         }
     }
 
-    &__setlist {
-        display: flex;
+    &__set {
         &__text {
             padding: 0.25rem 0 0.25rem 0;
             text-align: center;
         }
 
         &__link {
-            color: $text-dark;
-            border: 1px solid $text-dark;
+            color: $text-light;
+            background-color: $card-color;
+            border: 2px solid $text-dark;
             border-radius: 4px;
             padding: 5px;
-            margin-top: 500px;
+            margin-top: 0.25rem;
+            text-align: center;
+            font-weight: 400;
         }
     }
+}
+
+#fav-third {
+    display: none;
 }

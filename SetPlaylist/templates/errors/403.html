@@ -1,9 +1,4 @@
-{% extends 'base.html' %} {% block title %}403 - Forbidden{% endblock title %}
-{% block content %}
-<div id="403_error">
-    <div id="403_error__feedback">
-        <h2>Wrong wristband for this area...</h2>
-        <a href="#">Let's get you back to the show</a>
-    </div>
-</div>
-{% endblock content %}
+{% extends '/errors/error.html' %} {% block title %}403 - Forbidden{% endblock
+title %} {% block class_error %}a403{% endblock class_error %} {% block headline
+%}Hey, you're not allowed here...{% endblock headline %} {% block link_text
+%}get you back to the show{% endblock link_text %}

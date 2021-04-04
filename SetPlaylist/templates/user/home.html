@@ -1,87 +1,82 @@
 {% extends 'base.html' %} {% block title %} SetPlaylist - {{g.user.username}}{%
 endblock title %} {% block content %}
-<main>
-    <section id="hero">
-        <div id="landing_hero">
-            <div id="landing_hero__title_div">
-                <h1>Welcome back,</h1>
-                <p>{{g.user.username}}</p>
-            </div>
+<section id="hero">
+    <div class="landing_hero">
+        <div class="landing_hero__title_div">
+            <h1>Welcome back,</h1>
+            <p>{{g.user.username}}</p>
         </div>
-    </section>
-    <section id="errors">
-        {% for category, message in get_flashed_messages(with_categories=True)
-        %}
-        <div class="alert alert-{{ category }}">{{ message }}</div>
-        {% endfor %}
-    </section>
-    <section id="band_search">
-        <div id="search_bands">
-            <h3>Search Bands</h3>
-            <form action="/search" method="get">
-                <input type="text" name="search" id="search" />
-            </form>
-        </div>
-    </section>
-    <section id="home">
-        <div id="user_home">
-            <div id="user_home__left_column">
-                <div id="your_playlists">
-                    <div id="your_playlists__headline">
-                        <h2>Your Playlists</h2>
-                    </div>
-                    <div class="your_playlists__playlists">
-                        {% for playlist in g.user.playlists %}
-                        <div>
-                            <a href="#">{{playlist.name}}</a>
-                            <h5>{{playlist.band.name}}</h5>
-                            <h5>{{playlist.venue_name}}</h5>
-                            <h5>
-                                {{playlist.venue_city}},
-                                {{playlist.venue_state}}
-                            </h5>
-                            <h5>{{playlist.event_date}}</h5>
-                        </div>
-                        {% endfor %}
-                    </div>
+    </div>
+</section>
+<section id="errors">
+    {% for category, message in get_flashed_messages(with_categories=True) %}
+    <div class="error">{{ message }}</div>
+    {% endfor %}
+</section>
+<section id="band_search">
+    <div class="search_bands">
+        <h3>Search Bands</h3>
+        <form action="/search" method="get">
+            <input type="text" name="search" id="search" />
+        </form>
+    </div>
+</section>
+<section id="home">
+    <div class="user_home">
+        <div id="user_home__left_column">
+            <div id="your_playlists">
+                <div id="your_playlists__headline">
+                    <h2>Your Playlists</h2>
                 </div>
-                <div id="your_bands">
-                    <div id="your_bands__headline">
-                        <h2>Your Favorite Bands</h2>
-                    </div>
-                    <div id="your_bands__bands">
-                        {% for band in g.user.favorites %}
-                        <a href="#">{{band.name}}</a>
-                        <small
-                            ><a href="#"><i class="far fa-trash-alt"></i></a
-                        ></small>
-                        {% endfor %}
-                    </div>
-                </div>
-            </div>
-            <div id="user_home__right_column">
-                <div id="account">
-                    <div id="account__headline">
-                        <h3>Account</h3>
-                    </div>
-                    <div id="account__links">
-                        <a href="#">Edit Account Details</a>
-                        <a href="#">Manage Spotify Link</a>
-                    </div>
-                </div>
-                <div id="recent_playlists">
-                    <div id="recent_playlists__headline">
-                        <h4>Recently Created Playlists</h4>
-                    </div>
-                    <div id="recent_playlists__links">
-                        {% for playlist in recent_playlists %}
+                <div class="your_playlists__playlists">
+                    {% for playlist in g.user.playlists %}
+                    <div>
                         <a href="#">{{playlist.name}}</a>
-                        {% endfor %}
+                        <h5>{{playlist.band.name}}</h5>
+                        <h5>{{playlist.venue_name}}</h5>
+                        <h5>
+                            {{playlist.venue_city}}, {{playlist.venue_state}}
+                        </h5>
+                        <h5>{{playlist.event_date}}</h5>
                     </div>
+                    {% endfor %}
+                </div>
+            </div>
+            <div id="your_bands">
+                <div id="your_bands__headline">
+                    <h2>Your Favorite Bands</h2>
+                </div>
+                <div id="your_bands__bands">
+                    {% for band in g.user.favorites %}
+                    <a href="#">{{band.name}}</a>
+                    <small
+                        ><a href="#"><i class="far fa-trash-alt"></i></a
+                    ></small>
+                    {% endfor %}
                 </div>
             </div>
         </div>
-    </section>
-</main>
-
+        <div id="user_home__right_column">
+            <div id="account">
+                <div id="account__headline">
+                    <h3>Account</h3>
+                </div>
+                <div id="account__links">
+                    <a href="#">Edit Account Details</a>
+                    <a href="#">Manage Spotify Link</a>
+                </div>
+            </div>
+            <div id="recent_playlists">
+                <div id="recent_playlists__headline">
+                    <h4>Recently Created Playlists</h4>
+                </div>
+                <div id="recent_playlists__links">
+                    {% for playlist in recent_playlists %}
+                    <a href="#">{{playlist.name}}</a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
 {% endblock content %}

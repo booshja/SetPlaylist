@@ -1,9 +1,4 @@
-{% extends 'base.html' %} {% block title %}500 - Internal Error{% endblock title
-%} {% block content %}
-<div id="500_error">
-    <div id="500_error__feedback">
-        <h2>We're having some technical difficulties...</h2>
-        <a href="#">Let's try this again</a>
-    </div>
-</div>
-{% endblock content %}
+{% extends '/errors/error.html' %} {% block title %}500 - Internal Error{%
+endblock title %} {% block class_error %}a500{% endblock class_error %} {% block
+headline %}That didn't quite work...{% endblock headline %} {% block link_text
+%}try this again{% endblock link_text %}

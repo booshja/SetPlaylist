@@ -1,86 +1,81 @@
 {% extends 'base.html' %} {% block title %} SetPlaylist - Your favorite concert
 memories, one playlist at a time! {% endblock title %} {% block content %}
-<main>
-    <section id="hero">
-        <div class="landing-hero">
-            <div class="landing-hero__title-div">
-                <h1 class="landing-hero__title-div__h1">SetPlaylist</h1>
-                <p class="landing-hero__title-div__p">
-                    Your favorite concert memories, one playlist at a time
-                </p>
-            </div>
-            <div class="landing-hero__cta">
-                <a href="/register" class="landing-hero__cta__link"
-                    >Get Started</a
-                >
-            </div>
+<section id="hero">
+    <div class="landing-hero">
+        <div class="landing-hero__title-div">
+            <h1 class="landing-hero__title-div__h1">SetPlaylist</h1>
+            <p class="landing-hero__title-div__p">
+                Your favorite concert memories, one playlist at a time
+            </p>
         </div>
-    </section>
-    {% if get_flashed_messages()%}
-    <section id="error">
-        {% for category, message in get_flashed_messages() %}
-        <div class="error">{{ message }}</div>
-        {% endfor %}
-    </section>
-    {% endif %}
-    <section id="how">
-        <div class="how">
-            <h2 class="how__headline">How It Works</h2>
-            <div class="how__body">
-                <div class="how__body__search">
-                    <span class="how__body__search-icon"
-                        ><i class="fas fa-search"></i
-                    ></span>
-                    <p class="how__body__search-text">Search for a band</p>
-                </div>
-                <div class="how__body__setlist">
-                    <span><i class="fas fa-list-ul"></i></span>
-                    <p>Pick a setlist</p>
-                    <p class="how__body__setlist__text">OR</p>
-                    <p>Let us make you one</p>
-                </div>
-                <div class="how__body__spotify">
-                    <span class="how__body__spotify-icon"
-                        ><i class="fas fa-headphones-alt"></i
-                    ></span>
-                    <p class="how__body__spotify-text">Save to your Spotify</p>
-                </div>
+        <div class="landing-hero__cta">
+            <a href="/register" class="landing-hero__cta__link">Get Started</a>
+        </div>
+    </div>
+</section>
+{% if get_flashed_messages()%}
+<section id="error">
+    {% for message in get_flashed_messages() %}
+    <div class="error">{{ message }}</div>
+    {% endfor %}
+</section>
+{% endif %}
+<section id="how">
+    <div class="how container">
+        <h2 class="how__headline">How It Works</h2>
+        <div class="how__body">
+            <div class="how__body__search" id="how-body-top">
+                <span class="how__body__search-icon"
+                    ><i class="fas fa-search"></i
+                ></span>
+                <p class="how__body__search-text">Search for a band</p>
+            </div>
+            <div class="how__body__setlist">
+                <span><i class="fas fa-list-ul"></i></span>
+                <p>Pick a setlist</p>
+                <p class="how__body__setlist__text">OR</p>
+                <p>Let us make you one</p>
+            </div>
+            <div class="how__body__spotify">
+                <span class="how__body__spotify-icon"
+                    ><i class="fas fa-headphones-alt"></i
+                ></span>
+                <p class="how__body__spotify-text">Save to your Spotify</p>
             </div>
         </div>
-    </section>
-    <section id="band-search">
-        <div class="band-search">
-            <h3 class="band-search__headline">Search Bands</h3>
-            <form action="/search" method="get" class="band-search__input">
-                <input type="text" name="search" id="search" />
-            </form>
-        </div>
-    </section>
-    <section id="our-favorites">
-        <div class="our-favs">
-            <h3 class="our-favs__headline">Our Favorites</h3>
-            <div class="our-favs__setlists">
-                <div class="our-favs__setlists__setlist">
-                    <h4 class="our-favs__setlist__text">Led Zeppelin</h4>
-                    <h5 class="our-favs__setlist__text">Royal Albert Hall</h5>
-                    <h5 class="our-favs__setlist__text">January 9, 1970</h5>
-                    <a href="#" class="our-favs__setlist__link">See Playlist</a>
-                </div>
-                <div class="our-favs__setlists__setlist">
-                    <h4 class="our-favs__setlist__text">Led Zeppelin</h4>
-                    <h5 class="our-favs__setlist__text">Royal Albert Hall</h5>
-                    <h5 class="our-favs__setlist__text">January 9, 1970</h5>
-                    <a href="#" class="our-favs__setlist__link">See Playlist</a>
-                </div>
-                <div class="our-favs__setlists__setlist">
-                    <h4 class="our-favs__setlist__text">Led Zeppelin</h4>
-                    <h5 class="our-favs__setlist__text">Royal Albert Hall</h5>
-                    <h5 class="our-favs__setlist__text">January 9, 1970</h5>
-                    <a href="#" class="our-favs__setlist__link">See Playlist</a>
-                </div>
+    </div>
+</section>
+<section id="band-search">
+    <div class="band-search container">
+        <h3 class="band-search__headline">Search Bands</h3>
+        <form action="/search" method="get" class="band-search__input">
+            <input type="text" name="search" id="search" />
+        </form>
+    </div>
+</section>
+<section id="our-favorites">
+    <div class="our-favs container">
+        <h3 class="our-favs__headline">Our Favorites</h3>
+        <div class="our-favs__sets">
+            <div class="our-favs__sets__set">
+                <h4 class="our-favs__set__text">Led Zeppelin</h4>
+                <h5 class="our-favs__set__text">Royal Albert Hall</h5>
+                <h5 class="our-favs__set__text">January 9, 1970</h5>
+                <a href="#" class="our-favs__set__link">See Playlist</a>
+            </div>
+            <div class="our-favs__sets__set">
+                <h4 class="our-favs__set__text">Led Zeppelin</h4>
+                <h5 class="our-favs__set__text">Royal Albert Hall</h5>
+                <h5 class="our-favs__set__text">January 9, 1970</h5>
+                <a href="#" class="our-favs__set__link">See Playlist</a>
+            </div>
+            <div class="our-favs__sets__set" id="fav-third">
+                <h4 class="our-favs__set__text">Led Zeppelin</h4>
+                <h5 class="our-favs__set__text">Royal Albert Hall</h5>
+                <h5 class="our-favs__set__text">January 9, 1970</h5>
+                <a href="#" class="our-favs__set__link">See Playlist</a>
             </div>
         </div>
-    </section>
-</main>
-
+    </div>
+</section>
 {% endblock content %}

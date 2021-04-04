@@ -45,7 +45,7 @@ app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "secret!")
 
 CURR_USER_KEY = os.environ.get("CURR_USER_KEY")
 
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
@@ -128,7 +128,7 @@ def register():
             db.session.commit()
         except IntegrityError:
             form.username.errors.append("Username not available")
-            return render_template("/auth/register.html", form=form, title="Register")
+            return render_template("auth.html", form=form, title="Register")
 
         session_login(user)
 
@@ -164,7 +164,7 @@ def show_registration_form():
     - Show registration form
     """
     form = RegisterForm()
-    return render_template("auth/register.html", form=form, title="Register")
+    return render_template("auth.html", form=form, title="Register")
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -186,7 +186,7 @@ def login():
             return redirect("/")
         form.username.errors.append("Invalid username/password")
 
-    return render_template("/auth/login.html", form=form, title="Login")
+    return render_template("auth.html", form=form, title="Login")
 
 
 @app.route("/logout", methods=["POST"])
@@ -228,14 +228,12 @@ def forgot_password_check_username():
             user = User.query.filter_by(username=form.username.data).one()
         except NoResultFound or MultipleResultsFound:
             form.username.errors.append("Username not found")
-            return render_template(
-                "/auth/password.html", title="Forgot Password", form=form
-            )
+            return render_template("auth.html", title="Forgot Password", form=form)
 
-        g.password_reset = True
+        session["password_reset"] = True
         return redirect(f"/forgot/{user.id}")
 
-    return render_template("/auth/password.html", title="Forgot Password", form=form)
+    return render_template("auth.html", title="Forgot Password", form=form)
 
 
 @app.route("/forgot/<user_id>", methods=["GET", "POST"])
@@ -250,7 +248,7 @@ def forgot_password_check_secret_question(user_id):
     """
     form = ForgotPassAnswer()
 
-    if not g.password_reset:
+    if not session.get("password_reset"):
         flash("Access Unauthorized")
         return redirect("/")
 
@@ -264,7 +262,7 @@ def forgot_password_check_secret_question(user_id):
 
     form.secret_question.data = user.secret_question
 
-    return render_template("/auth/password.html", form=form, title="Forgot Password")
+    return render_template("/auth.html", form=form, title="Forgot Password")
 
 
 @app.route("/forgot/<user_id>/new", methods=["GET", "POST"])
@@ -280,7 +278,7 @@ def forgot_password_new_password(user_id):
     """
     form = PasswordReset()
 
-    if not g.password_reset:
+    if not session.get("password_reset"):
         flash("Access Unauthorized")
         return redirect("/")
 

@@ -1,0 +1,8 @@
+{% extends 'base.html' %} {% block content %}
+<div class="error-page {% block class_error %}{% endblock class_error %}">
+    <div class="error-page__feedback container">
+        <h2>{% block headline %}{% endblock headline %}</h2>
+        <a href="/">Let's {% block link_text %}{% endblock link_text%}</a>
+    </div>
+</div>
+{% endblock content %}
