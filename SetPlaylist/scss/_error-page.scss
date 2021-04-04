@@ -3,7 +3,6 @@
 .error-page {
     height: 80vh;
     background-repeat: no-repeat;
-    background-position: center;
     background-size: cover;
     overflow: hidden;
     margin-top: -25px;
@@ -23,12 +22,15 @@
 
 .a404 {
     background-image: url("/static/img/bee-balogun-KGyzk-EvTwQ-unsplash.jpg");
+    background-position: center;
 }
 
 .a403 {
     background-image: url("/static/img/seabass-creatives-U3m4_cKbUfc-unsplash.jpg");
+    background-position: 70% 0;
 }
 
 .a500 {
     background-image: url("/static/img/jaroslava-petrasova-eXUTOd9ZdsQ-unsplash.jpg");
+    background-position: center;
 }

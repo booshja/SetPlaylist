@@ -3,7 +3,7 @@ import os
 import requests
 import spotipy
 from dotenv import load_dotenv
-from flask import Flask, flash, g, redirect, render_template, request, session
+from flask import Flask, g, redirect, render_template, request, session
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import (
     ForgotPassAnswer,
@@ -222,8 +222,7 @@ def forgot_password_check_username():
     form = ForgotPassUsername()
 
     if g.user:
-        flash("You can change your password here")
-        return redirect(f"/user/{g.user.id}/edit")
+        return forbidden()
 
     if form.validate_on_submit():
         try:
@@ -255,8 +254,7 @@ def forgot_password_check_secret_question(user_id):
     form = ForgotPassAnswer()
 
     if not session.get("password_reset"):
-        flash("Access Unauthorized")
-        return redirect("/")
+        return forbidden()
 
     user = User.query.get_or_404(user_id)
 
@@ -287,8 +285,7 @@ def forgot_password_new_password(user_id):
     form = PasswordReset()
 
     if not session.get("password_reset"):
-        flash("Access Unauthorized")
-        return redirect("/")
+        return forbidden()
 
     user = User.query.get_or_404(user_id)
 
@@ -370,44 +367,47 @@ def edit_user(user_id):
     """
     form = UserEditForm()
 
-    if form.validate_on_submit():
-        if not form.secret_question and not form.secret_question:
-            form.secret_question.errors.append(
-                "Must change both secret question and answer together"
-            )
-            form.secret_answer.errors.append(
-                "Must change both secret question and answer together"
-            )
-            return redirect(f"/user/{user_id}/edit")
-
-        current_password = form.current_password.data
-        user = User.query.get_or_404(user_id)
-
-        if User.authenticate(user.username, current_password):
-            user.username = form.username.data or user.username
-            user.email = form.email.data or user.email
-            user.secret_question = form.secret_question.data or user.secret_question
-            user.secret_answer = form.secret_answer.data or user.secret_answer
-
-            new_password = form.new_password.data or None
-            retype_password = form.retype_password.data or None
-            if (
-                new_password is not None
-                and retype_password is not None
-                and new_password == retype_password
-            ):
-                user.password = User.hash_password(new_password)
-
-            try:
-                db.add(user)
-                db.commit()
-            except IntegrityError:
-                form.username.errors.append("Username unavailable")
+    if not g.user:
+        return forbidden()
+    else:
+        if form.validate_on_submit():
+            if not form.secret_question and not form.secret_question:
+                form.secret_question.errors.append(
+                    "Must change both secret question and answer together"
+                )
+                form.secret_answer.errors.append(
+                    "Must change both secret question and answer together"
+                )
                 return redirect(f"/user/{user_id}/edit")
 
-            return redirect("/home")
-        else:
-            form.password.errors.append("Incorrect Password")
+            current_password = form.current_password.data
+            user = User.query.get_or_404(user_id)
+
+            if User.authenticate(user.username, current_password):
+                user.username = form.username.data or user.username
+                user.email = form.email.data or user.email
+                user.secret_question = form.secret_question.data or user.secret_question
+                user.secret_answer = form.secret_answer.data or user.secret_answer
+
+                new_password = form.new_password.data or None
+                retype_password = form.retype_password.data or None
+                if (
+                    new_password is not None
+                    and retype_password is not None
+                    and new_password == retype_password
+                ):
+                    user.password = User.hash_password(new_password)
+
+                try:
+                    db.add(user)
+                    db.commit()
+                except IntegrityError:
+                    form.username.errors.append("Username unavailable")
+                    return redirect(f"/user/{user_id}/edit")
+
+                return redirect("/home")
+            else:
+                form.password.errors.append("Incorrect Password")
 
     return render_template(
         "/user/edit.html", form=form, title="Edit User", q_display=""
@@ -559,16 +559,16 @@ def show_failure_page():
 #######################
 
 
+@app.errorhandler(403)
+def forbidden():
+    return render_template("/errors/403.html"), 403
+
+
 @app.errorhandler(404)
-def page_not_found(e):
+def page_not_found():
     return render_template("/errors/404.html"), 404
 
 
 @app.errorhandler(500)
-def server_error(e):
+def server_error():
     return render_template("/errors/500.html"), 500
-
-
-@app.errorhandler(403)
-def forbidden(e):
-    return render_template("/errors/403.html"), 403
