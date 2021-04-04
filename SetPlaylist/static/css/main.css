@@ -625,6 +625,14 @@ footer .footer__logos img {
   color: #3b5262;
 }
 
+#secret_question {
+  pointer-events: none;
+  border: none;
+  background-color: #cebaa5;
+  color: #000000;
+  height: 2rem;
+}
+
 body {
   background-image: url("../img/emma-paillex-dzrclo52oxk-unsplash.jpg");
   background-size: cover;

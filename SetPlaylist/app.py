@@ -248,19 +248,19 @@ def forgot_password_check_secret_question(user_id):
     """
     form = ForgotPassAnswer()
 
-    if not session.get("password_reset"):
-        flash("Access Unauthorized")
-        return redirect("/")
+    # if not session.get("password_reset"):
+    #     flash("Access Unauthorized")
+    #     return redirect("/")
 
-    user = User.query.get_or_404(user_id)
+    # user = User.query.get_or_404(user_id)
 
-    if form.validate_on_submit():
-        if User.authenticate_secret_answer(user.username, form.secret_answer.data):
-            return redirect("/forgot/<user_id>/new")
-        else:
-            form.secret_answer.errors.append("Invalid secret answer")
+    # if form.validate_on_submit():
+    #     if User.authenticate_secret_answer(user.username, form.secret_answer.data):
+    #         return redirect("/forgot/<user_id>/new")
+    #     else:
+    #         form.secret_answer.errors.append("Invalid secret answer")
 
-    form.secret_question.data = user.secret_question
+    # form.secret_question.data = user.secret_question
 
     return render_template("/auth.html", form=form, title="Forgot Password")
 
@@ -355,6 +355,15 @@ def edit_user(user_id):
     form = UserEditForm()
 
     if form.validate_on_submit():
+        if not form.secret_question and not form.secret_question:
+            form.secret_question.errors.append(
+                "Must change both secret question and answer together"
+            )
+            form.secret_answer.errors.append(
+                "Must change both secret question and answer together"
+            )
+            return redirect(f"/user/{user_id}/edit")
+
         current_password = form.current_password.data
         user = User.query.get_or_404(user_id)
 

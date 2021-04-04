@@ -63,3 +63,11 @@
         color: $card-color;
     }
 }
+
+#secret_question {
+    pointer-events: none;
+    border: none;
+    background-color: $div-color;
+    color: $text-dark;
+    height: 2rem;
+}

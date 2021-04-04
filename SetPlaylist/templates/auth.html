@@ -4,9 +4,9 @@ title %} {% block content %}
     <h2 class="auth-box__headline">{{title}}</h2>
     <form method="post" class="auth-box__form">
         {{form.hidden_tag()}} {% for field in form if field.widget.input_type !=
-        'hidden' %} {{field.label(class_="auth-box__form__label")}}
-        {{field(class_="auth-box__form__input", placeholder=field.label.text)}}
-        {% for error in field.errors %}
+        'hidden' %} {{field.label(class_="auth-box__form__label",
+        id="{{field.label.text}}")}} {{field(class_="auth-box__form__input",
+        placeholder=field.label.text)}} {% for error in field.errors %}
         <span>{{error}}</span>
         {% endfor %} {% endfor %}
         <div class="auth-box__form__buttons">
