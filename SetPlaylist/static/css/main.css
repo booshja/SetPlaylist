@@ -872,6 +872,13 @@ footer .footer__logos img {
   background-image: url("/static/img/sarah-kilian-52jRtc2S_VE-unsplash.jpg");
 }
 
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   background-image: url("../img/emma-paillex-dzrclo52oxk-unsplash.jpg");
   background-size: cover;

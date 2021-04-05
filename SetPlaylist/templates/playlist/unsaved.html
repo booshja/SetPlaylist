@@ -1,0 +1,61 @@
+{% extends 'base.html' %} {% block title %}{{setlist.band.name}} - SetPlaylist{%
+endblock title %} {% block content %}
+<section id="hero">
+    <div class="setlist-hero">
+        <div class="setlist-hero__feedback">
+            <h1 class="setlist-hero__feedback__headline">
+                {{setlist.band.name}}
+            </h1>
+            <h2 class="setlist-hero__feedback__sub-headline">Setlist</h2>
+        </div>
+    </div>
+</section>
+<section id="body">
+    <div class="main-col">
+        <div class="main-col__playlist">
+            <h3 class="main-col__playlist__headline">Playlist</h3>
+            <ol class="main-col__playlist__list">
+                {% for song in setlist %}
+                <li class="main-col__playlist__list__song">
+                    <a href="#">{{song.name}}</a>
+                </li>
+                {% endfor %}
+            </ol>
+            <p class="main-col__playlist__source">
+                Source: <a href="{{setlist.url}}">Setlist on setlist.fm</a>
+            </p>
+        </div>
+    </div>
+    <div class="right-col">
+        <div class="right-col__links">
+            <a href="#" class="right-col__links__link">Save as a Playlist</a>
+            <a href="#" class="right-col__links__link"
+                >Add as a Playlist to Spotify</a
+            >
+            <a href="#" class="right-col__links__link"
+                >{{setlist.band.name}} on Spotify</a
+            >
+        </div>
+        <div class="right-col__details">
+            <h3 class="right-col__details__headline">Details</h3>
+            <div class="right-col__details__links">
+                <ul class="right-col__details__links__list">
+                    <li class="right-col__details__links__list__band">
+                        {{band.name}}
+                    </li>
+                    <li class="right-col__details__links__list__venue">
+                        Venue: {{setlist.venue_name}}
+                    </li>
+                    <li class="right-col__details__links__list__location">
+                        Location: {{setlist.venue_city}},
+                        {{setlist.venue_state}}
+                    </li>
+                    <li class="right-col__details__links__list__date">
+                        Date: {{setlist.event_date}}
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock content %}

@@ -496,29 +496,34 @@ def search_page():
 # Playlist Routes #####################
 ###################
 
-
+# FIXME:
 @app.route("/playlist/setlist")
 def show_setlist():
     """
     Todo - Shows the setlist data that was selected
     """
     # setlist (Playlist object that has not been saved to the db)
+    return render_template("/playlist/playlist.html")
 
 
+# FIXME:
 @app.route("/playlist/<int:playlist_id>")
 def show_created_playlist():
     """
     Todo - Shows the setlist that was created
     """
     # playlist (Playlist object saved to db)
+    return render_template("/playlist/playlist.html")
 
 
+# FIXME:
 @app.route("/playlist/<int:band_id>/hype")
 def show_hype_setlist():
     """
     Todo - Shows the setlist created from band's top songs
     """
     # playlist (Playlist object saved to db, created from band's top songs from spotify)
+    return render_template("/playlist/playlist.html")
 
 
 @app.route("/playlist/success")

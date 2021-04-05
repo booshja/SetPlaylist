@@ -1,47 +1,70 @@
 {% extends 'base.html' %} {% block title %}{{playlist.band.name}} -
 SetPlaylist{% endblock title %} {% block content %}
 <section id="hero">
-    <div id="band_detail_hero">
-        <div id="band_detail_hero__title_div">
-            <h1>{{playlist.band.name}}</h1>
+    <div class="playlist-hero">
+        <div class="playlist-hero__feedback">
+            <h1 class="playlist-hero__headline">{{playlist.band.name}}</h1>
+            <h2 class="playlist-hero__feedback__sub-headline">Setlist</h2>
         </div>
     </div>
 </section>
 <section id="body">
-    <div id="main_column">
-        <div id="playlist">
-            <h3>Playlist</h3>
-            <ol>
+    <div class="main-col">
+        <div class="main-col__playlist">
+            <h3 class="main-col__playlist__headline">Playlist</h3>
+            <ol class="main-col__playlist__list">
                 {% for song in playlist %}
-                <li>{{song.name}}</li>
+                <li class="main-col__playlist__list__song">{{song.name}}</li>
                 {% endfor %}
             </ol>
         </div>
-        <div id="not_included">
-            <h3>Songs Not Included</h3>
-            <p>These songs were not included because reasons?</p>
-            <ol>
+        {% if TODO: %}
+        <div class="main-col__not-incl">
+            <h3 class="main-col__not-incl__headline">Songs Not Included</h3>
+            <p class="main-col__not-incl__desc">
+                These songs were not included because reasons?
+            </p>
+            <ol class="main-col__not-incl__list">
                 {% for song in not_included %}
-                <li>{{song.name}}</li>
+                <li class="main-col__not-incl__list__song">{{song.name}}</li>
                 {% endfor %}
             </ol>
         </div>
+        {% endif %}
     </div>
-    <div id="right_column">
-        <div id="links">
-            <a href="#">Save Playlist</a>
-            <a href="#">Add Playlist to Spotify</a>
-            <a href="#">{{playlist.band.name}} on Spotify</a>
+    <div class="right-col">
+        <div class="right-col__links">
+            <a href="#" class="right-col__links__link">Save Playlist</a>
+            <a href="#" class="right-col__links__link"
+                >Add Playlist to Spotify</a
+            >
+            <a href="#" class="right-col__links__link"
+                >{{playlist.band.name}} on Spotify</a
+            >
         </div>
-        <div id="details">
-            <h3>Show Details</h3>
-            <ul>
-                <li>{{playlist.band.name}}</li>
-                <li>{{playlist.venue_name}}</li>
-                <li>{{playlist.venue_city}}, {{playlist.venue_state}}</li>
-                <li>{{playlist.event_date}}</li>
-                <li>Songs Played: {{len(playlist.songs)}}</li>
-                <li>Total Playlist Length: {{playlist.length}}</li>
+        <div class="right-col__details">
+            <h3 class="right-col__details__headline">Show Details</h3>
+            <ul class="right-col__details__list">
+                <li class="right-col__details__list__item">
+                    {{playlist.band.name}}
+                </li>
+                <li class="right-col__details__list__item">
+                    {{playlist.venue_name}}
+                </li>
+                <li class="right-col__details__list__item">
+                    {{playlist.venue_city}}, {{playlist.venue_state}}
+                </li>
+                <li class="right-col__details__list__item">
+                    {{playlist.event_date}}
+                </li>
+                {% if TODO: %}
+                <li class="right-col__details__list__item">
+                    Songs Played: {{len(playlist.songs)}}
+                </li>
+                <li class="right-col__details__list__item">
+                    Total Playlist Length: {{playlist.length}}
+                </li>
+                {% endif %}
             </ul>
         </div>
     </div>
