@@ -527,6 +527,7 @@ def show_success_page():
     Todo - shows the success page after playlist saved to spotify
     """
     # spotify_link (link to open playlist via spotify)
+    return render_template("/playlist/result.html", result="Success!")
 
 
 @app.route("/playlist/failure")
@@ -534,6 +535,7 @@ def show_failure_page():
     """
     Todo - shows the failure page after playlist not saved to spotify
     """
+    return render_template("/playlist/result.html", result="Uh oh!")
 
 
 #######################

@@ -1,0 +1,38 @@
+@import "config";
+
+.result {
+    height: 80vh;
+    margin: -25px 0;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    overflow: hidden;
+    flex-direction: column;
+
+    &__feedback {
+        display: flex;
+        flex-direction: column;
+        align-content: space-around;
+        padding: 1rem;
+        width: 50%;
+        position: relative;
+        top: 10%;
+        left: 5%;
+
+        &__headline {
+            margin-bottom: 0.2rem;
+        }
+
+        &__link {
+            margin-top: 0.5rem;
+        }
+    }
+}
+
+.playlist-success {
+    background-image: url("/static/img/tobias-tullius-JdJrqv7BzhM-unsplash.jpg");
+}
+
+.playlist-fail {
+    background-image: url("/static/img/sarah-kilian-52jRtc2S_VE-unsplash.jpg");
+}

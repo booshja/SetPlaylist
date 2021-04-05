@@ -13,13 +13,6 @@ memories, one playlist at a time! {% endblock title %} {% block content %}
         </div>
     </div>
 </section>
-{% if get_flashed_messages()%}
-<section id="error">
-    {% for message in get_flashed_messages() %}
-    <div class="error">{{ message }}</div>
-    {% endfor %}
-</section>
-{% endif %}
 <section id="how">
     <div class="how container">
         <h2 class="how__headline">How It Works</h2>

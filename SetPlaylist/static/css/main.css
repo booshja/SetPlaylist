@@ -819,6 +819,59 @@ footer .footer__logos img {
   width: 80%;
 }
 
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.result {
+  height: 80vh;
+  margin: -25px 0;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+}
+
+.result__feedback {
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -ms-flex-line-pack: distribute;
+      align-content: space-around;
+  padding: 1rem;
+  width: 50%;
+  position: relative;
+  top: 10%;
+  left: 5%;
+}
+
+.result__feedback__headline {
+  margin-bottom: 0.2rem;
+}
+
+.result__feedback__link {
+  margin-top: 0.5rem;
+}
+
+.playlist-success {
+  background-image: url("/static/img/tobias-tullius-JdJrqv7BzhM-unsplash.jpg");
+}
+
+.playlist-fail {
+  background-image: url("/static/img/sarah-kilian-52jRtc2S_VE-unsplash.jpg");
+}
+
 body {
   background-image: url("../img/emma-paillex-dzrclo52oxk-unsplash.jpg");
   background-size: cover;
@@ -865,12 +918,6 @@ main {
           flex: 1;
 }
 
-h1,
-h2,
-h3 {
-  font-weight: 400;
-}
-
 a {
   color: #3b5262;
   text-decoration: none;
@@ -887,16 +934,6 @@ ul {
   display: -ms-flexbox;
   display: flex;
   color: #000000;
-}
-
-.error {
-  background-color: #ff0000;
-  border: 2px solid #9c0000;
-  border-radius: 4px;
-  font-weight: 700;
-  padding: 10px;
-  margin-top: 1rem;
-  text-align: center;
 }
 
 .landing-hero {
