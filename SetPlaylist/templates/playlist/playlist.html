@@ -1,25 +1,29 @@
 {% extends 'base.html' %} {% block title %}{{playlist.band.name}} -
 SetPlaylist{% endblock title %} {% block content %}
 <section id="hero">
-    <div class="playlist-hero">
-        <div class="playlist-hero__feedback">
-            <h1 class="playlist-hero__headline">{{playlist.band.name}}</h1>
-            <h2 class="playlist-hero__feedback__sub-headline">Setlist</h2>
+    <div class="playlist-hero container">
+        <div class="playlist-hero__feedback container">
+            <h1 class="playlist-hero__feedback__headline">
+                {{playlist.band.name}}
+            </h1>
+            <h2 class="playlist-hero__feedback__sub-headline">
+                {{playlist.venue_name}}
+            </h2>
         </div>
     </div>
 </section>
 <section id="body">
     <div class="main-col">
-        <div class="main-col__playlist">
-            <h3 class="main-col__playlist__headline">Playlist</h3>
+        <div class="main-col__playlist container">
+            <h3 class="main-col__playlist__headline">Setlist</h3>
             <ol class="main-col__playlist__list">
-                {% for song in playlist %}
+                {% for song in playlist.songs %}
                 <li class="main-col__playlist__list__song">{{song.name}}</li>
                 {% endfor %}
             </ol>
         </div>
-        {% if TODO: %}
-        <div class="main-col__not-incl">
+        {% if saved == True %}
+        <div class="main-col__not-incl container">
             <h3 class="main-col__not-incl__headline">Songs Not Included</h3>
             <p class="main-col__not-incl__desc">
                 These songs were not included because reasons?
@@ -33,7 +37,7 @@ SetPlaylist{% endblock title %} {% block content %}
         {% endif %}
     </div>
     <div class="right-col">
-        <div class="right-col__links">
+        <div class="right-col__links container">
             <a href="#" class="right-col__links__link">Save Playlist</a>
             <a href="#" class="right-col__links__link"
                 >Add Playlist to Spotify</a
@@ -42,7 +46,7 @@ SetPlaylist{% endblock title %} {% block content %}
                 >{{playlist.band.name}} on Spotify</a
             >
         </div>
-        <div class="right-col__details">
+        <div class="right-col__details container">
             <h3 class="right-col__details__headline">Show Details</h3>
             <ul class="right-col__details__list">
                 <li class="right-col__details__list__item">
@@ -57,9 +61,9 @@ SetPlaylist{% endblock title %} {% block content %}
                 <li class="right-col__details__list__item">
                     {{playlist.event_date}}
                 </li>
-                {% if TODO: %}
+                {% if saved == True %}
                 <li class="right-col__details__list__item">
-                    Songs Played: {{len(playlist.songs)}}
+                    Songs in Playlist: {{len(playlist.songs)}}
                 </li>
                 <li class="right-col__details__list__item">
                     Total Playlist Length: {{playlist.length}}

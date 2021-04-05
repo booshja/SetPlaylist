@@ -1,1 +1,73 @@
 @import "config";
+
+.playlist-hero {
+    background-image: url("/static/img/matthew-kalapuch-sqJ4tLBiurw-unsplash.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
+    height: 300px;
+    margin-bottom: 25px;
+    flex-direction: column;
+
+    &__feedback {
+        position: relative;
+        top: 10%;
+        left: 5%;
+        display: flex;
+        flex-direction: column;
+        width: fit-content;
+
+        &__headline {
+            font-size: 2rem;
+        }
+
+        &__sub-headline {
+            font-weight: 400;
+        }
+    }
+}
+
+.main-col__playlist {
+    margin-bottom: 25px;
+    flex-direction: column;
+    align-items: center;
+
+    &__headline {
+        font-size: 1.7rem;
+        margin-bottom: 0.7rem;
+    }
+
+    &__list {
+        &__song {
+            padding: 0.5rem 0;
+        }
+    }
+}
+
+.right-col__links {
+    margin-bottom: 25px;
+    flex-direction: column;
+    align-items: center;
+
+    &__link {
+        padding: 0.7rem 0;
+        font-size: 1.2rem;
+    }
+}
+
+.right-col__details {
+    margin-bottom: 50px;
+    flex-direction: column;
+    align-items: center;
+
+    &__headline {
+        font-size: 1.7rem;
+        margin-bottom: 0.7rem;
+    }
+
+    &__list {
+        &__item {
+            padding: 0.5rem 0;
+        }
+    }
+}

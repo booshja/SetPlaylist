@@ -182,8 +182,6 @@ class Playlist(db.Model):
 
     length = db.Column(db.Integer, nullable=False)
 
-    user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
-
     band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
 
     songs = db.relationship("Song", secondary="playlists_songs", backref="playlists")

@@ -496,14 +496,40 @@ def search_page():
 # Playlist Routes #####################
 ###################
 
+playlist = {
+    "spotify_playlist_id": "none",
+    "name": "Daughters @ Neumos",
+    "description": "Daughters @ Neumos on 30 Nov 2019",
+    "tour_name": "You Won't Get What You Want",
+    "venue_name": "Neumos",
+    "event_date": "30 Nov 2019",
+    "venue_city": "Seattle",
+    "venue_state": "WA",
+    "length": "50",
+    "band": {"name": "Daughters"},
+    "songs": {
+        "song1": {"name": "The Reason They Hate Me"},
+        "song2": {"name": "The Lords Song"},
+        "song3": {"name": "City Song"},
+        "song4": {"name": "Long Road, No Turns"},
+        "song5": {"name": "Our Queens (One Is Many, Many Are One)"},
+        "song6": {"name": "Satan in the Wait"},
+        "song7": {"name": "The Virgin"},
+        "song8": {"name": "The Hit"},
+        "song9": {"name": "The Unattractive, Portable Head"},
+        "song10": {"name": "Guest House"},
+        "song11": {"name": "Ocean Song"},
+    },
+}
+
 # FIXME:
 @app.route("/playlist/setlist")
 def show_setlist():
     """
     Todo - Shows the setlist data that was selected
     """
-    # setlist (Playlist object that has not been saved to the db)
-    return render_template("/playlist/playlist.html")
+    # playlist (Playlist object that has not been saved to the db), saved
+    return render_template("/playlist/playlist.html", saved="False", playlist=playlist)
 
 
 # FIXME:
@@ -512,8 +538,8 @@ def show_created_playlist():
     """
     Todo - Shows the setlist that was created
     """
-    # playlist (Playlist object saved to db)
-    return render_template("/playlist/playlist.html")
+    # playlist (Playlist object saved to db), saved, not_included (songs not in the playlist that were on the setlist)
+    return render_template("/playlist/playlist.html", saved="True")
 
 
 # FIXME:
@@ -522,8 +548,9 @@ def show_hype_setlist():
     """
     Todo - Shows the setlist created from band's top songs
     """
-    # playlist (Playlist object saved to db, created from band's top songs from spotify)
-    return render_template("/playlist/playlist.html")
+    saved = True
+    # playlist (Playlist object saved to db, created from band's top songs from spotify), saved
+    return render_template("/playlist/playlist.html", saved=saved)
 
 
 @app.route("/playlist/success")
