@@ -686,6 +686,139 @@ footer .footer__logos img {
   background-image: url("/static/img/elena-mozhvilo-RhXAO8OXyDY-unsplash.jpg");
 }
 
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.band-hero {
+  background-color: #cebaa5;
+  border-radius: 4px;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.band-hero__image {
+  height: 300px;
+  border-radius: 4px;
+}
+
+.band-hero__name {
+  padding: 1rem;
+  font-size: 2.5rem;
+  font-weight: 700;
+  justify-self: flex-end;
+}
+
+.band-bio {
+  margin-top: 25px;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  padding: 1rem;
+}
+
+.band-bio__headline {
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 0.7rem;
+}
+
+.band-bio__bio {
+  text-align: center;
+}
+
+.band-links {
+  margin-top: 25px;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  padding: 1rem;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.band-links__link {
+  margin: 0.5rem 0;
+  font-size: 1.2rem;
+}
+
+.band-setlists {
+  margin: 25px 0;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  padding: 1rem;
+}
+
+.band-setlists__headline {
+  text-align: center;
+  margin-bottom: 0.7rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.band-setlists li {
+  margin: 0.7rem 0;
+}
+
+.band-upcoming {
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  margin-bottom: 25px;
+  padding: 1rem;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+}
+
+.band-upcoming__headline {
+  text-align: center;
+  margin-bottom: 0.7rem;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.band-fuzzy-bio {
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin: 1rem 0;
+  padding: 1rem;
+}
+
+.band-fuzzy-bio__headline {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.band-fuzzy-bio__cta {
+  text-align: center;
+  margin-top: 0.7rem;
+  width: 80%;
+}
+
 body {
   background-image: url("../img/emma-paillex-dzrclo52oxk-unsplash.jpg");
   background-size: cover;
@@ -768,7 +901,7 @@ ul {
 
 .landing-hero {
   background-size: cover;
-  background-repeat: no-cover;
+  background-repeat: no-repeat;
   background-position: center;
   border-radius: 4px;
   color: #000000;

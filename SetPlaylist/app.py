@@ -454,29 +454,11 @@ def show_band_details(band_name):
         upcoming_shows = requests.get()
 
     return render_template(
-        "/band/search.html", band=sp_band, upcoming_shows=upcoming_shows
+        "/band/band-detail.html", band=sp_band, upcoming_shows=upcoming_shows
     )
 
-    # If logged in - band, setlists, upcoming_shows
-    # If not - band
-
-
-@app.route("/band/<int:band_id>/setlist/<offset>")
-def return_band_setlists_paginate(band_id, offset):
-    """
-    Todo - Shows further results for setlist results
-            - Comes from JS axios call
-    """
-    # Do I need this? Could just pass entire list and have JS paginate
-
-
-@app.route("/band/<int:band_id>/shows/<offset>")
-def return_band_shows_paginate(band_id, offset):
-    """
-    Todo - Shows further results for show results
-            -Comes from JS axios call
-    """
-    # Do I need this? Could just pass entire list and have JS paginate
+    # If logged in - band, setlists, upcoming_shows, band_image(url)
+    # If not - band, band_image(url)
 
 
 ######################

@@ -1,53 +1,68 @@
 {% extends 'base.html' %} {% block title %}{{band.name}} - SetPlaylist{%
 endblock %} {% block content %}
 <section id="hero">
-    <div id="band_detail_hero">
-        <div id="band_detail_hero__title_div">
-            <h1>{{band.name}}</h1>
-        </div>
+    <div class="band-hero container">
+        <img class="band-hero__image" src="{{band_image}}" />
+        <h1 class="band-hero__name">{{band.name}}</h1>
     </div>
 </section>
-<section id="body">
-    <div id="bio_links">
-        <div id="bio">
-            <div id="bio__headline">
-                <h3>{{band.name}} Bio</h3>
-                <!-- TODO: Need to check this based on data -->
-                <!-- <p>{{band.bio}}</p> TODO: -->
-            </div>
-        </div>
-        <div id="links">
-            <div id="links__headline">
-                <a href="#">Create Hype Up Playlist</a>
-                <a href="#">{{band.name}} on Spotify</a>
-                <a href="#">Add to favorites</a>
-            </div>
-        </div>
+{% if g.user %}
+<section id="detail">
+    <div class="band-bio container">
+        <h3 class="band-bio__headline">{{band.name}} Bio</h3>
+        <p class="band-bio__bio">{{band.bio}}</p>
     </div>
-    <div id="setlists">
-        <div id="setlists__headline">
-            <h3>Setlists</h3>
+</section>
+<section id="band-links">
+    <div class="band-links container">
+        <a href="#" class="band-links__link">Create Hype Up Playlist</a>
+        <a href="#" class="band-links__link">{{band.name}} on Spotify</a>
+        <a href="#" class="band-links__link">Add to favorites</a>
+    </div>
+</section>
+<section id="band-setlists">
+    <div class="band-setlists container">
+        <h3 class="band-setlists__headline">Setlists</h3>
+        <ul class="band-setlists__list">
             {% for set in setlists %}
-            <a href="#"
-                >{{set.venue_name}} - {{set.event_date}} - {{set.venue_city}},
-                {{set.venue_state}}</a
-            >
-            {% endfor %}
-        </div>
-    </div>
-</section>
-<section id="upcoming">
-    <div id="upcoming_shows">
-        <h3>Upcoming Shows</h3>
-        <ul>
-            {% for show in upcoming_shows %}
-            <a href="{{show.url}}"
-                >{{show.datetime[:9]}} - {{show.venue.name}} -
-                {{show.venue.city}}, {{show.venue.region}},
-                {{show.venue.country}}</a
-            >
+            <li>
+                <a href="#" class="band-setlists__list__setlist"
+                    >{{set.venue_name}} - {{set.event_date}} -
+                    {{set.venue_city}}, {{set.venue_state}}</a
+                >
+            </li>
             {% endfor %}
         </ul>
     </div>
 </section>
-{% endblock content %}
+<section id="band-upcoming">
+    <div class="band-upcoming container">
+        <h3 class="band-upcoming__headline">Upcoming Shows</h3>
+        {% if upcoming_shows %}
+        <ul class="band-upcoming__list">
+            {% for show in upcoming_shows %}
+            <li>
+                <a href="{{show.url}}" class="band-upcoming__list__show"
+                    >{{show.datetime[:9]}} - {{show.venue.name}} -
+                    {{show.venue.city}}, {{show.venue.region}},
+                    {{show.venue.country}}</a
+                >
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No upcoming shows for {{band.name}}</p>
+        {% endif %}
+    </div>
+</section>
+{% else %}
+<section id="fuzzy-detail">
+    <div class="band-fuzzy-bio container">
+        <h3 class="band-fuzzy-bio__headline">{{band.name}} Bio</h3>
+        <p class="band-fuzzy-bio__cta">
+            <a href="/login">Login</a> or <a href="/register">Sign Up</a> to
+            save setlists and see the band bio, setlists, and upcoming shows.
+        </p>
+    </div>
+</section>
+{% endif %} {% endblock content %}

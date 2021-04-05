@@ -1,0 +1,99 @@
+@import "config";
+
+.band-hero {
+    background-color: $div-color;
+    border-radius: 4px;
+    flex-direction: column;
+    align-items: center;
+
+    &__image {
+        height: 300px;
+        border-radius: 4px;
+    }
+
+    &__name {
+        padding: 1rem;
+        font-size: 2.5rem;
+        font-weight: 700;
+        justify-self: flex-end;
+    }
+}
+
+.band-bio {
+    margin-top: 25px;
+    flex-direction: column;
+    padding: 1rem;
+
+    &__headline {
+        font-size: 1.5rem;
+        font-weight: 700;
+        text-align: center;
+        margin-bottom: 0.7rem;
+    }
+
+    &__bio {
+        text-align: center;
+    }
+}
+
+.band-links {
+    margin-top: 25px;
+    flex-direction: column;
+    padding: 1rem;
+    align-items: center;
+
+    &__link {
+        margin: 0.5rem 0;
+        font-size: 1.2rem;
+    }
+}
+
+.band-setlists {
+    margin: 25px 0;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+
+    &__headline {
+        text-align: center;
+        margin-bottom: 0.7rem;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+
+    li {
+        margin: 0.7rem 0;
+    }
+}
+
+.band-upcoming {
+    flex-direction: column;
+    margin-bottom: 25px;
+    padding: 1rem;
+    align-items: center;
+
+    &__headline {
+        text-align: center;
+        margin-bottom: 0.7rem;
+        font-weight: 700;
+        font-size: 1.5rem;
+    }
+}
+
+.band-fuzzy-bio {
+    flex-direction: column;
+    align-items: center;
+    margin: 1rem 0;
+    padding: 1rem;
+
+    &__headline {
+        font-size: 1.5rem;
+        font-weight: 700;
+    }
+
+    &__cta {
+        text-align: center;
+        margin-top: 0.7rem;
+        width: 80%;
+    }
+}

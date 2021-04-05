@@ -1,5 +1,5 @@
 @import "config", "footer", "menu", "landing", "home", "error-page", "auth",
-    "user-edit";
+    "user-edit", "band";
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&family=Sen:wght@400;700&display=swap");
 
 body {
@@ -68,7 +68,7 @@ ul {
 
 .landing-hero {
     background-size: cover;
-    background-repeat: no-cover;
+    background-repeat: no-repeat;
     background-position: center;
     border-radius: 4px;
     color: $text-dark;
