@@ -27,7 +27,7 @@
     }
 }
 
-.main-col__playlist {
+.playlist {
     margin-bottom: 25px;
     flex-direction: column;
     align-items: center;
@@ -37,11 +37,19 @@
         margin-bottom: 0.7rem;
     }
 
+    &__desc {
+        margin-bottom: 0.7rem;
+    }
+
     &__list {
         &__song {
             padding: 0.5rem 0;
         }
     }
+}
+
+#not-incl__headline {
+    font-size: 1.2rem;
 }
 
 .right-col__links {
@@ -68,6 +76,9 @@
     &__list {
         &__item {
             padding: 0.5rem 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
     }
 }

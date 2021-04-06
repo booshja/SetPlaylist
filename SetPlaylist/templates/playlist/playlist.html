@@ -14,23 +14,25 @@ SetPlaylist{% endblock title %} {% block content %}
 </section>
 <section id="body">
     <div class="main-col">
-        <div class="main-col__playlist container">
-            <h3 class="main-col__playlist__headline">Setlist</h3>
-            <ol class="main-col__playlist__list">
+        <div class="playlist container">
+            <h3 class="playlist__headline">Setlist</h3>
+            <ol class="playlist__list">
                 {% for song in playlist.songs %}
-                <li class="main-col__playlist__list__song">{{song.name}}</li>
+                <li class="playlist__list__song">{{song.name}}</li>
                 {% endfor %}
             </ol>
         </div>
-        {% if saved == True %}
-        <div class="main-col__not-incl container">
-            <h3 class="main-col__not-incl__headline">Songs Not Included</h3>
-            <p class="main-col__not-incl__desc">
+        {% if saved==True %}
+        <div class="playlist container">
+            <h3 class="playlist__headline" id="not-incl__headline">
+                Songs Not Included
+            </h3>
+            <p class="playlist__desc">
                 These songs were not included because reasons?
             </p>
-            <ol class="main-col__not-incl__list">
+            <ol class="playlist__list">
                 {% for song in not_included %}
-                <li class="main-col__not-incl__list__song">{{song.name}}</li>
+                <li class="playlist__list__song">{{song.name}}</li>
                 {% endfor %}
             </ol>
         </div>
@@ -61,9 +63,10 @@ SetPlaylist{% endblock title %} {% block content %}
                 <li class="right-col__details__list__item">
                     {{playlist.event_date}}
                 </li>
-                {% if saved == True %}
+                {% if saved==True %}
                 <li class="right-col__details__list__item">
-                    Songs in Playlist: {{len(playlist.songs)}}
+                    Songs in Playlist:
+                    <!-- {{playlist.songs}} -->
                 </li>
                 <li class="right-col__details__list__item">
                     Total Playlist Length: {{playlist.length}}

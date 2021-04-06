@@ -37,6 +37,10 @@ main {
 a {
     color: $card-color;
     text-decoration: none;
+
+    &:hover {
+        color: $nav-color;
+    }
 }
 
 ul {

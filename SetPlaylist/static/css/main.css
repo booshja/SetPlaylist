@@ -916,7 +916,7 @@ footer .footer__logos img {
   font-weight: 400;
 }
 
-.main-col__playlist {
+.playlist {
   margin-bottom: 25px;
   -webkit-box-orient: vertical;
   -webkit-box-direction: normal;
@@ -927,13 +927,21 @@ footer .footer__logos img {
           align-items: center;
 }
 
-.main-col__playlist__headline {
+.playlist__headline {
   font-size: 1.7rem;
   margin-bottom: 0.7rem;
 }
 
-.main-col__playlist__list__song {
+.playlist__desc {
+  margin-bottom: 0.7rem;
+}
+
+.playlist__list__song {
   padding: 0.5rem 0;
+}
+
+#not-incl__headline {
+  font-size: 1.2rem;
 }
 
 .right-col__links {
@@ -970,6 +978,16 @@ footer .footer__logos img {
 
 .right-col__details__list__item {
   padding: 0.5rem 0;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
 }
 
 body {
@@ -1021,6 +1039,10 @@ main {
 a {
   color: #3b5262;
   text-decoration: none;
+}
+
+a:hover {
+  color: #6a9eae;
 }
 
 ul {
