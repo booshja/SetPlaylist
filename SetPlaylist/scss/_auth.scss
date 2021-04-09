@@ -32,6 +32,12 @@
             height: 1.5rem;
         }
 
+        &__redirect-notice {
+            margin-top: 1rem;
+            font-size: 0.7rem;
+            align-self: flex-end;
+        }
+
         &__buttons {
             align-self: flex-end;
             display: flex;

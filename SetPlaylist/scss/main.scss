@@ -1,5 +1,5 @@
 @import "config", "footer", "menu", "landing", "home", "error-page", "auth",
-    "user-edit", "band", "playlist-result", "playlist";
+    "user-edit", "band", "playlist-result", "playlist", "search";
 @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;700&family=Sen:wght@400;700&display=swap");
 
 body {
@@ -53,6 +53,11 @@ ul {
     display: flex;
     color: $text-dark;
     padding: 1rem;
+}
+
+.error {
+    color: #c00000;
+    display: block;
 }
 
 .landing-hero {

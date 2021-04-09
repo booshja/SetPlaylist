@@ -1,6 +1,6 @@
 from flask_wtf import FlaskForm
 from wtforms import PasswordField, StringField
-from wtforms.validators import InputRequired, Email, Length, EqualTo
+from wtforms.validators import DataRequired, Email, Length, EqualTo, Optional
 
 
 class RegisterForm(FlaskForm):
@@ -9,39 +9,38 @@ class RegisterForm(FlaskForm):
     """
 
     username = StringField(
-        "Username", validators=[InputRequired(message="Username is required")]
+        "Username", validators=[DataRequired(message="Username is required")]
     )
     password = PasswordField(
         "Password",
         validators=[
             Length(min=8, message="Password must be at least 8 characters"),
-            InputRequired(message="Password is required"),
+            DataRequired(message="Password is required"),
         ],
     )
     match_password = PasswordField(
         "Retype Password",
         validators=[
             EqualTo("password", message="Passwords must match"),
-            Length(min=8, message="Password must be at least 8 characters"),
-            InputRequired(message="Password confirmation is required"),
+            DataRequired(message="Password confirmation is required"),
         ],
     )
     email = StringField(
         "Email",
         validators=[
-            InputRequired(message="Email is required"),
-            Email(message="Email must be in 'example@example.com' format"),
+            DataRequired(message="Email is required"),
+            Email(message="Email must be in 'example@email.com' format"),
         ],
     )
     secret_question = StringField(
         "Secret Question",
         validators=[
-            InputRequired(message="Secret question is required"),
+            DataRequired(message="Secret question is required"),
             Length(max=28, message="Secret question must be 28 characters at maximum"),
         ],
     )
     secret_answer = PasswordField(
-        "Secret Answer", validators=[InputRequired(message="Secret answer is required")]
+        "Secret Answer", validators=[DataRequired(message="Secret answer is required")]
     )
 
 
@@ -51,13 +50,13 @@ class LoginForm(FlaskForm):
     """
 
     username = StringField(
-        "Username", validators=[InputRequired(message="Username is required")]
+        "Username", validators=[DataRequired(message="Username is required")]
     )
     password = PasswordField(
         "Password",
         validators=[
             Length(min=8, message="Password must be at least 8 characters"),
-            InputRequired(message="Password is required"),
+            DataRequired(message="Password is required"),
         ],
     )
 
@@ -67,27 +66,36 @@ class UserEditForm(FlaskForm):
     Form for editing user
     """
 
-    username = StringField("Username")
+    username = StringField("Username", validators=[Optional()])
     email = StringField(
         "Email",
-        validators=[Email(message="Email must be in 'example@example.com' format")],
+        validators=[
+            Email(message="Email must be in 'example@example.com' format"),
+            Optional(),
+        ],
     )
     new_password = PasswordField(
         "New Password",
-        validators=[Length(min=8, message="Password must be at least 8 characters")],
+        validators=[
+            Length(min=8, message="Password must be at least 8 characters"),
+            Optional(),
+        ],
     )
     retype_new_password = PasswordField(
         "Retype New Password",
         validators=[
             Length(min=8, message="Password must be at least 8 characters"),
             EqualTo("new_password", message="Passwords must match"),
+            Optional(),
         ],
     )
-    secret_question = StringField("Secret Question", validators=[Length(max=28)])
-    secret_answer = StringField("Secret Answer")
+    secret_question = StringField(
+        "Secret Question", validators=[Length(max=28), Optional()]
+    )
+    secret_answer = StringField("Secret Answer", validators=[Optional()])
     current_password = PasswordField(
         "Enter Current Password To Confirm Changes",
-        validators=[InputRequired(message="Current password is required")],
+        validators=[DataRequired(message="Current password is required")],
     )
 
 
@@ -97,7 +105,7 @@ class ForgotPassUsername(FlaskForm):
     """
 
     username = StringField(
-        "Username", validators=[InputRequired(message="Username is required")]
+        "Username", validators=[DataRequired(message="Username is required")]
     )
 
 
@@ -108,7 +116,7 @@ class ForgotPassAnswer(FlaskForm):
 
     secret_question = StringField("Secret Question")
     secret_answer = PasswordField(
-        "Secret Answer", validators=[InputRequired(message="Secret Answer is required")]
+        "Secret Answer", validators=[DataRequired(message="Secret Answer is required")]
     )
 
 

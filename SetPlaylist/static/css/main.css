@@ -624,6 +624,13 @@ footer .footer__logos img {
   height: 1.5rem;
 }
 
+.auth-box__form__redirect-notice {
+  margin-top: 1rem;
+  font-size: 0.7rem;
+  -ms-flex-item-align: end;
+      align-self: flex-end;
+}
+
 .auth-box__form__buttons {
   -ms-flex-item-align: end;
       align-self: flex-end;
@@ -990,6 +997,43 @@ footer .footer__logos img {
           align-items: center;
 }
 
+* {
+  -webkit-box-sizing: border-box;
+          box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.results-hero {
+  height: 300px;
+}
+
+.results-list {
+  -webkit-box-orient: vertical;
+  -webkit-box-direction: normal;
+      -ms-flex-direction: column;
+          flex-direction: column;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  margin: 25px 0 50px 0;
+}
+
+.results-list__headline {
+  font-weight: 700;
+  font-size: 2rem;
+  padding: 1rem 0 0.5rem 0;
+}
+
+.results-list__bands {
+  margin: 1rem 0;
+}
+
+.results-list__bands__band {
+  margin: 1rem 0;
+  font-size: 1.2rem;
+}
+
 body {
   background-image: url("../img/emma-paillex-dzrclo52oxk-unsplash.jpg");
   background-size: cover;
@@ -1057,6 +1101,11 @@ ul {
   display: flex;
   color: #000000;
   padding: 1rem;
+}
+
+.error {
+  color: #c00000;
+  display: block;
 }
 
 .landing-hero {

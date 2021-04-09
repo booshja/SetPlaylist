@@ -1,31 +1,46 @@
 {% extends 'base.html' %} {% block title %} {{search}} - SetPlaylist {% endblock
 %} {% block content %}
 <section id="hero">
-    <div id="results_hero">
-        <div id="results_hero__title_div">
-            <h1>Results</h1>
-            <h2>for "{{search}}"</h2>
+    <div class="results-hero container">
+        <div class="results-hero__feedback">
+            {% if search %}
+            <h1 class="results-hero__feedback__headline">Results</h1>
+            <h2 class="results-her__feedback__sub-headline">
+                for "{{search}}"
+            </h2>
+            {% else %}
+            <h1 class="results-hero__feedbac__headline">Search</h1>
+            {% endif %}
         </div>
     </div>
 </section>
-<section id="band_search">
-    <div id="search_bands">
-        <h3>Search Bands</h3>
-        <form action="/search" method="get">
-            <input type="text" name="search" id="search" />
+<section id="band-search">
+    <div class="band-search container">
+        <h3 class="band-search__headline">Search Bands</h3>
+        <form action="/band/search" method="get" class="band-search__input">
+            <input
+                type="text"
+                name="search"
+                id="search"
+                placeholder="Search Bands"
+            />
         </form>
     </div>
 </section>
 {% if band_results %}
 <section id="results">
-    <div id="results_list">
-        <div id="results_list__headline">
-            <h3>Results</h3>
-        </div>
-        <div id="results_list__bands">
-            {% for band in band_results %}
-            <a href="#">{{band.name}}</a>
-            {% endfor %}
+    <div class="results-list container">
+        <h3 class="results-list__headline">Results</h3>
+        <div id="results-list__bands">
+            <ul>
+                {% for band in band_results %}
+                <li class="results-list__bands__band">
+                    <a href="/band/{{ format_name(band.name) }}"
+                        >{{band.name}}</a
+                    >
+                </li>
+                {% endfor %}
+            </ul>
         </div>
     </div>
 </section>

@@ -16,7 +16,7 @@
         <header class="navbar">
                 <div>
                     {% if g.user %}
-                    <a href="/home">
+                    <a href="/user/home">
                     {% else %}
                     <a href="/">
                     {% endif %}
@@ -32,15 +32,15 @@
                 <ul class="menu-nav">
                     {% if not g.user %}
                     <li class="menu-nav__item">
-                        <form class="menu-nav__item__form" action="/band/search">
+                        <form class="menu-nav__item__form" method="GET" action="/band/search">
                             <input
                                 type="text"
-                                name="q"
+                                name="search"
                                 placeholder="Search Bands"
                                 id="search"
                             />
                         </form>
-                        <a href="/search" class="menu-nav__link">Search</a>
+                        <a href="/band/search" class="menu-nav__link">Search</a>
                     </li>
                     <li class="menu-nav__item">
                         <a href="/register" class="menu-nav__link">Sign Up</a>
@@ -52,13 +52,13 @@
                     <li class="menu-nav__item">
                         <form action="/band/search" class="menu-nav__search">
                             <input
-                            name="q"
+                            name="search"
                             placeholder="Search Bands"
                             id="search"
                             />
                         </form>
                     </li>
-                    <li class="menu-nav__item"><a href="/home" class="menu-nav__link">{{g.user.username}}</a></li>
+                    <li class="menu-nav__item"><a href="/user/home" class="menu-nav__link">{{g.user.username}}</a></li>
                     <li class="menu-nav__item">
                         <form action="/logout" method="post" class="menu-nav__link"><button type="submit">Log Out</button></form>
                     </li>
@@ -78,7 +78,7 @@
                             {% if not g.user %}
                             <li><a href="/register">Create Account</a></li>
                             {% else %}
-                            <li><a href="/home">Home</a></li>
+                            <li><a href="/user/home">Home</a></li>
                             {% endif %}
                             <li><a href="mailto:jacob.andes@gmail.com">Contact</a></li>
                         </ul>

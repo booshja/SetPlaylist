@@ -23,3 +23,12 @@ class CustomCache(CacheHandler):
         """
         session["token"] = token_info
         return None
+
+    def clear_cache(self):
+        """
+        Clear the cache of the token_info
+        """
+        if session.get("token"):
+            session.pop("token")
+
+        return None

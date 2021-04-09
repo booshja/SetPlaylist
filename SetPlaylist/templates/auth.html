@@ -2,15 +2,23 @@
 title %} {% block content %} {% block edit %}{% endblock edit %}
 <div class="auth-box container">
     <h2 class="auth-box__headline">{{title}}</h2>
+    {% if form.errors.items() %}
+    <ul>
+        {% for field, errors in form.errors.items() %} {% for error in errors %}
+        <li class="error">{{error}}</li>
+        {% endfor %} {% endfor %}
+    </ul>
+    {% endif %}
     <form method="post" class="auth-box__form">
         {{form.hidden_tag()}} {% for field in form if field.widget.input_type !=
         'hidden' %} {{field.label(class_="auth-box__form__label")}} {% if
         q_display=="q_display" and field.label.text=="Secret Question" %}
         {{field(class_="auth-box__form__input q_display")}} {% else %}
         {{field(class_="auth-box__form__input", placeholder=field.label.text)}}
-        {% endif %} {% for error in field.errors %}
-        <span>{{error}}</span>
-        {% endfor %} {% endfor %}
+        {% endif %} {% endfor %}
+        {% if title == "Register" %}
+        <p class="auth-box__form__redirect-notice">You will be redirected to log in to Spotify</small></p>
+        {% endif %}
         <div class="auth-box__form__buttons">
             <a href="/" class="auth-box__form__buttons__btn">Cancel</a>
             <button type="submit" class="auth-box__form__buttons__btn submit">

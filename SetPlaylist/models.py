@@ -36,13 +36,13 @@ class User_Playlist(db.Model):
 
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
 
-    band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
+    playlist_id = db.Column(db.Integer, db.ForeignKey("playlists.id"))
 
     def __repr__(self):
         """
         A more readable representation of the instance
         """
-        return f"<User_Playlist id={self.id} user_id={self.user_id} band_id={self.band_id}>"
+        return f"<User_Playlist id={self.id} user_id={self.user_id} playlist_id={self.band_id}>"
 
 
 class User(db.Model):
@@ -58,11 +58,13 @@ class User(db.Model):
 
     password = db.Column(db.Text, nullable=False)
 
+    email = db.Column(db.Text, nullable=False)
+
     secret_question = db.Column(db.Text, nullable=False)
 
     secret_answer = db.Column(db.Text, nullable=False)
 
-    spotify_connected = db.Column(db.Boolean, nullable=False, default=None)
+    spotify_connected = db.Column(db.Boolean, nullable=False, default=False)
 
     spotify_user_token = db.Column(db.Text, default=None)
 
@@ -82,8 +84,6 @@ class User(db.Model):
         email,
         secret_question,
         secret_answer,
-        spotify_connected,
-        spotify_user_id,
     ):
         """
         - Sign up user
@@ -99,8 +99,6 @@ class User(db.Model):
             email=email,
             secret_question=secret_question,
             secret_answer=hashed_answer,
-            spotify_connected=spotify_connected,
-            spotify_user_id=spotify_user_id,
         )
 
         db.session.add(user)
@@ -235,7 +233,7 @@ class Band(db.Model):
     photo = db.Column(db.Text)
 
     @classmethod
-    def prep_band_name(name):
+    def bit_prep_band_name(name):
         """
         - Check band name for any non-URL characters
         - Modifies name if there are

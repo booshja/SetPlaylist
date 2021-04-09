@@ -1,9 +1,10 @@
 import os
 
 import requests
-import spotipy
+import tekore as tk
+import urllib.parse
 from dotenv import load_dotenv
-from flask import Flask, g, redirect, render_template, request, session
+from flask import Flask, g, redirect, render_template, request, session, jsonify
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import (
     ForgotPassAnswer,
@@ -24,8 +25,6 @@ from models import (
     connect_db,
     db,
 )
-from custom_cache import CustomCache
-from spotipy.oauth2 import SpotifyOAuth, SpotifyClientCredentials
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
@@ -42,10 +41,12 @@ app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
 app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = True
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "secret!")
+app.config["SESSION_COOKIE_SECURE"] = True
+app.config["SESSION_COOKIE_HTTPONLY"] = True
 
 CURR_USER_KEY = os.environ.get("CURR_USER_KEY")
 
-# toolbar = DebugToolbarExtension(app)
+toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
@@ -67,7 +68,24 @@ def session_logout(user):
     """
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
-        del session["token"]
+
+
+@app.context_processor
+def utility_processor():
+    def format_name(name):
+        """
+        Returns a url-safe string
+        """
+        return urllib.parse.quote(name)
+
+    return dict(format_name=format_name)
+
+
+def unformat_name(name):
+    """
+    Returns the decoded url component
+    """
+    return urllib.parse.unquote(name)
 
 
 ##############################
@@ -80,21 +98,10 @@ def add_to_g():
     """
     If user logged in, add to Flask global
     """
-
     if CURR_USER_KEY in session:
-        g.user = User.query.get(session(CURR_USER_KEY))
-        g.cache_handler = CustomCache()
-        g.auth_manager = spotipy.oauth2.SpotifyOAuth(cache_handler=g.cache_handler)
-        if g.auth_manager.validate_token(g.cache_handler.get_cached_token()):
-            g.spotify = spotipy.Spotify(auth_manager=g.auth_manager)
+        g.user = User.query.get(session[CURR_USER_KEY])
     else:
         g.user = None
-        g.spotify = spotipy.Spotify(
-            auth_manager=SpotifyClientCredentials(
-                client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
-                client_secret=os.environ.get("SPOTIPY_CLIENT_SECRET"),
-            )
-        )
 
 
 @app.route("/register", methods=["POST"])
@@ -122,8 +129,6 @@ def register():
                 email=form.email.data,
                 secret_question=form.secret_question.data,
                 secret_answer=form.secret_answer.data,
-                spotify_connected=False,
-                spotify_user_id=None,
             )
             db.session.commit()
         except IntegrityError:
@@ -134,29 +139,19 @@ def register():
 
         session_login(user)
 
-        return redirect("/home")
+        # Spotify authorization flow
 
-    # Spotify authorization flow
-    g.cache_handler = CustomCache()
-    auth_manager = SpotifyOAuth(
-        client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
-        client_secret=os.environ.get("SPOTIPY_CLIENT_SECRET"),
-        redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
-        scope=os.environ.get("SPOTIPY_SCOPE"),
-    )
+        auth_manager = SpotifyPKCE(
+            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
+            redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
+            scope=os.environ.get("SPOTIPY_SCOPE"),
+        )
 
-    # If redirect back from Spotify
-    if request.args.get("code"):
-        auth_manager.get_access_token(request.args.get("code"))
-        return redirect("/home")
-
-    # Send user to login with Spotify
-    if not auth_manager.validate_token(g.cache_handler.get_cached_token()):
+        # Send user to login with Spotify
         auth_url = auth_manager.get_authorize_url()
         return redirect(auth_url)
 
-    g.spotify = spotipy.Spotify(auth_manager=auth_manager)
-    return redirect("/home")
+    return render_template("auth.html", form=form, title="Register", q_display="")
 
 
 @app.route("/register", methods=["GET"])
@@ -166,6 +161,19 @@ def show_registration_form():
     - Show registration form
     """
     form = RegisterForm()
+
+    if request.args.get("code"):
+        # Spotify authorization flow
+
+        auth_manager = SpotifyPKCE(
+            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
+            redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
+            scope=os.environ.get("SPOTIPY_SCOPE"),
+        )
+
+        CACHE_HANDLER.save_token_to_cache(request.args.get("code"))
+        return redirect("/user/home")
+
     return render_template("auth.html", form=form, title="Register", q_display="")
 
 
@@ -197,7 +205,8 @@ def logout():
     POST ROUTE:
     - Handle logout of user
     """
-    session_logout()
+    user = session[CURR_USER_KEY]
+    session_logout(user)
     return redirect("/")
 
 
@@ -318,11 +327,11 @@ def forgot_password_new_password(user_id):
 def landing():
     """
     GET ROUTE:
-    - If user logged in, redirect to '/home'
+    - If user logged in, redirect to '/user/home'
     - If logged out, return logged out landing page
     """
     if g.user:
-        return redirect("/home")
+        return redirect("/user/home")
     else:
         return render_template("landing.html")
 
@@ -405,7 +414,7 @@ def edit_user(user_id):
                     form.username.errors.append("Username unavailable")
                     return redirect(f"/user/{user_id}/edit")
 
-                return redirect("/home")
+                return redirect("/user/home")
             else:
                 form.password.errors.append("Incorrect Password")
 
@@ -417,6 +426,25 @@ def edit_user(user_id):
 ###############
 # Band Routes #########################
 ###############
+def handle_spotify():
+    if CURR_USER_KEY in session:
+        auth_manager = spotipy.oauth2.SpotifyPKCE(
+            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
+            redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
+            scope=os.environ.get("SPOTIPY_SCOPE"),
+            cache_handler=CACHE_HANDLER,
+        )
+        if auth_manager.validate_token(CACHE_HANDLER.get_cached_token()):
+            return spotipy.Spotify(auth_manager=auth_manager)
+    else:
+        auth_manager = SpotifyClientCredentials(
+            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
+            client_secret=os.environ.get("SPOTIPY_CLIENT_SECRET"),
+            cache_handler=CACHE_HANDLER,
+        )
+        return spotipy.Spotify(
+            auth_manager=auth_manager,
+        )
 
 
 @app.route("/band/<band_name>")
@@ -424,6 +452,9 @@ def show_band_details(band_name):
     """
     Todo - Shows band details
     """
+
+    spotify = handle_spotify()
+
     band = Band.query.filter_by(name=band_name).first()
 
     if band is None:
@@ -437,25 +468,26 @@ def show_band_details(band_name):
             params=[("artistName", band_name)],
         ).json()
 
-        fm_band = res["artists"][0]
+        fm_band = res["artist"][0]
 
-        # TODO: Fix Spotify
-        # Can't use spotify.artist, this requires a band uri or url, not a band name
-        sp_band = g.spotify.artist(fm_band.name)
+        sp_res = spotify.search(q=fm_band["name"], type="artist")
+        sp_items = sp_res["artists"]["items"]
 
-        search_name = Band.prep_band_name(fm_band.name)
+        return jsonify(sp_items)
 
-        url = (
-            os.environ.get("BANDSINTOWN_BASE_URL")
-            + "/artists"
-            + search_name
-            + "/events"
-        )
-        upcoming_shows = requests.get()
+    #     bit_search_name = Band.bit_prep_band_name(fm_band.name)
 
-    return render_template(
-        "/band/band-detail.html", band=sp_band, upcoming_shows=upcoming_shows
-    )
+    #     url = (
+    #         os.environ.get("BANDSINTOWN_BASE_URL")
+    #         + "/artists"
+    #         + bit_search_name
+    #         + "/events"
+    #     )
+    #     upcoming_shows = requests.get(url)
+
+    # return render_template(
+    #     "/band/band-detail.html", band=sp_band, upcoming_shows=upcoming_shows
+    # )
 
     # If logged in - band, setlists, upcoming_shows, band_image(url)
     # If not - band, band_image(url)
@@ -467,16 +499,15 @@ def show_band_details(band_name):
 
 
 @app.route("/band/search")
-def search_page():
+def search_results():
     """
     GET ROUTE:
+    - Display search results
+    OR
     - Display search form
     """
-    search = request.args.get("q")
-
-    if not search:
-        return render_template("band/search.html")
-    else:
+    if request.args.get("search"):
+        search = request.args.get("search")
         url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
         res = requests.get(
             url,
@@ -487,9 +518,11 @@ def search_page():
             params=[("artistName", search)],
         ).json()
 
-    return render_template(
-        "/band/search.html", search=search, band_results=res["artist"]
-    )
+        return render_template(
+            "/band/search.html", search=search, band_results=res["artist"]
+        )
+    else:
+        return render_template("band/search.html")
 
 
 ###################
@@ -556,15 +589,15 @@ def show_failure_page():
 
 
 @app.errorhandler(403)
-def forbidden():
+def forbidden(e):
     return render_template("/errors/403.html"), 403
 
 
 @app.errorhandler(404)
-def page_not_found():
+def page_not_found(e):
     return render_template("/errors/404.html"), 404
 
 
 @app.errorhandler(500)
-def server_error():
+def server_error(e):
     return render_template("/errors/500.html"), 500
