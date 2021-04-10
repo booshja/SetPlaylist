@@ -24,7 +24,9 @@ endblock %} {% block content %}
             <li>This band has no setlists.</li>
             {% else %} {% for set in setlists %}
             <li>
-                <a href="#" class="band-setlists__list__setlist"
+                <a
+                    href="/playlist/{{band['id']}}/{{set['id']}}"
+                    class="band-setlists__list__setlist"
                     >{{format_setlist_display(set)}}</a
                 >
             </li>

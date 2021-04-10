@@ -519,6 +519,7 @@ def show_band_details(band_id):
 
         fm_band = {}
 
+        # FIXME: This is checking for only EXACT matches, need to check for case-insensitive
         try:
             for band in res["artist"]:
                 if band["name"] == band_name:
@@ -615,17 +616,44 @@ def search_results():
 ###################
 
 
-# FIXME:
-@app.route("/playlist/<band_name>/<event_date>")
-def show_setlist(band_name, event_date):
+# TODO:
+@app.route("/playlist/<band_id>/<setlist_id>")
+def show_setlist(band_id, setlist_id):
     """
-    Todo - Shows the setlist data that was selected
+    GET ROUTE: - Shows the setlist data that was selected
     """
-    # playlist (Playlist object that has not been saved to the db), saved
-    return render_template("/playlist/playlist.html", saved=False, playlist=playlist)
+    res = spotify.artist(band_id)
+    json_res = res.json()
+    sp_band = json.loads(json_res)
+
+    url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
+    res = requests.get(
+        url,
+        headers={
+            "Accept": "application/json",
+            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+        },
+    ).json()
+
+    details = Playlist.details(res)
+
+    setlist = res["sets"]["set"]
+
+    playlist = []
+
+    for set in setlist:
+        for song in set["song"]:
+            playlist.append(song["name"])
+
+    return render_template(
+        "/playlist/playlist.html",
+        saved=False,
+        band=sp_band,
+        details=details,
+        playlist=playlist,
+    )
 
 
-# FIXME:
 @app.route("/playlist/<int:playlist_id>")
 def show_created_playlist(playlist_id):
     """
@@ -635,12 +663,11 @@ def show_created_playlist(playlist_id):
     return render_template(
         "/playlist/playlist.html",
         saved=True,
-        playlist=playlist,
-        not_included=not_included,
+        # playlist=playlist,
+        # not_included=not_included,
     )
 
 
-# FIXME:
 @app.route("/playlist/<int:band_id>/hype")
 def show_hype_setlist(band_id):
     """

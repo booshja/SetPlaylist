@@ -1,13 +1,11 @@
-{% extends 'base.html' %} {% block title %}{{playlist.band.name}} -
-SetPlaylist{% endblock title %} {% block content %}
+{% extends 'base.html' %} {% block title %}{{band['name']}} - SetPlaylist{%
+endblock title %} {% block content %}
 <section id="hero">
     <div class="playlist-hero container">
         <div class="playlist-hero__feedback container">
-            <h1 class="playlist-hero__feedback__headline">
-                {{playlist.band.name}}
-            </h1>
+            <h1 class="playlist-hero__feedback__headline">{{band['name']}}</h1>
             <h2 class="playlist-hero__feedback__sub-headline">
-                {{playlist.venue_name}}
+                {{details['venue_name']}}
             </h2>
         </div>
     </div>
@@ -16,11 +14,17 @@ SetPlaylist{% endblock title %} {% block content %}
     <div class="main-col">
         <div class="playlist container">
             <h3 class="playlist__headline">Setlist</h3>
+            {% if playlist %}
             <ol class="playlist__list">
-                {% for song in playlist.songs %}
-                <li class="playlist__list__song">{{song.name}}</li>
+                {% for song in playlist %}
+                <li class="playlist__list__song">{{song}}</li>
                 {% endfor %}
             </ol>
+            {% else %}
+            <p class="playlist__list__error">
+                Looks like there's no setlist for this show, sorry!
+            </p>
+            {% endif %}
         </div>
         {% if saved==True %}
         <div class="playlist container">
@@ -45,28 +49,25 @@ SetPlaylist{% endblock title %} {% block content %}
                 >Add Playlist to Spotify</a
             >
             <a href="#" class="right-col__links__link"
-                >{{playlist.band.name}} on Spotify</a
+                >{{band['name']}} on Spotify</a
             >
         </div>
         <div class="right-col__details container">
             <h3 class="right-col__details__headline">Show Details</h3>
             <ul class="right-col__details__list">
+                <li class="right-col__details__list__item">{{band['name']}}</li>
                 <li class="right-col__details__list__item">
-                    {{playlist.band.name}}
+                    {{details['venue_name']}}
                 </li>
                 <li class="right-col__details__list__item">
-                    {{playlist.venue_name}}
+                    {{details['venue_loc']}}
                 </li>
                 <li class="right-col__details__list__item">
-                    {{playlist.venue_city}}, {{playlist.venue_state}}
-                </li>
-                <li class="right-col__details__list__item">
-                    {{playlist.event_date}}
+                    {{details['event_date']}}
                 </li>
                 {% if saved==True %}
                 <li class="right-col__details__list__item">
-                    Songs in Playlist:
-                    <!-- {{playlist.songs}} -->
+                    Songs in Playlist: {{playlist.length}}
                 </li>
                 <li class="right-col__details__list__item">
                     Total Playlist Length: {{playlist.length}}

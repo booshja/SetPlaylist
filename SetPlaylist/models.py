@@ -160,6 +160,8 @@ class Playlist(db.Model):
 
     spotify_playlist_id = db.Column(db.Text, nullable=False)
 
+    setlistfm_setlist_id = db.Column(db.Text, nullable=False)
+
     name = db.Column(db.Text, nullable=False)
 
     description = db.Column(db.Text, nullable=False)
@@ -170,9 +172,7 @@ class Playlist(db.Model):
 
     event_date = db.Column(db.Text, default=None)
 
-    venue_city = db.Column(db.Text, default=None)
-
-    venue_state = db.Column(db.Text, default=None)
+    venue_loc = db.Column(db.Text, default=None)
 
     length = db.Column(db.Integer, nullable=False)
 
@@ -181,6 +181,50 @@ class Playlist(db.Model):
     songs = db.relationship("Song", secondary="playlists_songs", backref="playlists")
 
     band = db.relationship("Band")
+
+    @classmethod
+    def details(cls, res):
+        """
+        Returns a details dict for the setlist page
+        """
+        name = res["artist"]["name"] + " at " + res["venue"]["name"]
+
+        try:
+            tour_name = res["tour"]["name"]
+        except KeyError:
+            tour_name = "N/A"
+
+        try:
+            venue_name = res["venue"]["name"]
+        except KeyError:
+            venue_name = "N/A"
+
+        try:
+            venue_loc = (
+                res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["stateCode"]
+            )
+        except KeyError:
+            venue_loc = "N/A"
+
+        event_date = res["eventDate"]
+
+        description = (
+            res["artist"]["name"]
+            + " at "
+            + venue_name
+            + ", "
+            + venue_loc
+            + " on "
+            + event_date
+        )
+        return {
+            "name": name,
+            "tour_name": tour_name,
+            "venue_loc": venue_loc,
+            "event_date": event_date,
+            "description": description,
+            "venue_name": venue_name,
+        }
 
     def __repr__(self):
         """
