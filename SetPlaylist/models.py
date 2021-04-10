@@ -64,11 +64,7 @@ class User(db.Model):
 
     secret_answer = db.Column(db.Text, nullable=False)
 
-    spotify_connected = db.Column(db.Boolean, nullable=False, default=False)
-
     spotify_user_token = db.Column(db.Text, default=None)
-
-    spotify_user_id = db.Column(db.Text, default=None)
 
     favorites = db.relationship("Band", secondary="favorites")
 
@@ -233,7 +229,7 @@ class Band(db.Model):
     photo = db.Column(db.Text)
 
     @classmethod
-    def bit_prep_band_name(name):
+    def bit_prep_band_name(cls, name):
         """
         - Check band name for any non-URL characters
         - Modifies name if there are
@@ -249,6 +245,8 @@ class Band(db.Model):
             name = name.replace("*", "%252A")
         if '"' in name:
             name = name.replace('"', "%27C")
+
+        return name
 
     def __repr__(self):
         """

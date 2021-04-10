@@ -1,10 +1,11 @@
 import os
 
+import json
 import requests
-import tekore as tk
+import tekore
 import urllib.parse
 from dotenv import load_dotenv
-from flask import Flask, g, redirect, render_template, request, session, jsonify
+from flask import Flask, g, redirect, render_template, request, session, jsonify, abort
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import (
     ForgotPassAnswer,
@@ -39,12 +40,28 @@ app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
-app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = True
+app.config["DEBUG_TB_INTERCEPT_REDIRECTS"] = False
 app.config["SECRET_KEY"] = os.environ.get("SECRET_KEY", "secret!")
 app.config["SESSION_COOKIE_SECURE"] = True
 app.config["SESSION_COOKIE_HTTPONLY"] = True
 
 CURR_USER_KEY = os.environ.get("CURR_USER_KEY")
+APP_TOKEN = tekore.request_client_token(
+    os.environ.get("SPOTIFY_CLIENT_ID"), os.environ.get("SPOTIFY_CLIENT_SECRET")
+)
+
+conf = tekore.config_from_environment(return_refresh=True)
+cred = tekore.Credentials(*conf)
+spotify = tekore.Spotify(APP_TOKEN)
+
+auths = {}
+users = {}
+scope = (
+    tekore.scope.playlist_modify_private
+    + tekore.scope.playlist_read_private
+    + tekore.scope.user_read_private
+    + tekore.scope.playlist_read_collaborative
+)
 
 toolbar = DebugToolbarExtension(app)
 
@@ -61,6 +78,8 @@ def session_login(user):
     """
     session[CURR_USER_KEY] = user.id
 
+    return None
+
 
 def session_logout(user):
     """
@@ -68,6 +87,11 @@ def session_logout(user):
     """
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
+    uid = session.pop("user", None)
+    if uid is not None:
+        users.pop(uid, None)
+
+    return None
 
 
 @app.context_processor
@@ -76,16 +100,32 @@ def utility_processor():
         """
         Returns a url-safe string
         """
-        return urllib.parse.quote(name)
+        fixed = name.replace("/", "--sls--")
+        fixed = urllib.parse.quote(fixed, safe="")
+        return fixed
 
-    return dict(format_name=format_name)
+    def format_setlist_display(set):
+        venue_name = set["venue"]["name"]
+        event_date = set["eventDate"]
+        venue_loc = (
+            set["venue"]["city"]["name"]
+            + ", "
+            + set["venue"]["city"]["stateCode"]
+            + ", "
+            + set["venue"]["city"]["country"]["code"]
+        )
+        if venue_name == "":
+            venue_name = "Venue Unknown"
+        return f"{venue_name} - {event_date} - {venue_loc}"
+
+    return dict(format_name=format_name, format_setlist_display=format_setlist_display)
 
 
 def unformat_name(name):
     """
     Returns the decoded url component
     """
-    return urllib.parse.unquote(name)
+    return name.replace("--sls--", "/")
 
 
 ##############################
@@ -104,7 +144,7 @@ def add_to_g():
         g.user = None
 
 
-@app.route("/register", methods=["POST"])
+@app.route("/register", methods=["GET", "POST"])
 def register():
     """
     GET ROUTE:
@@ -118,63 +158,67 @@ def register():
     - If username in user
         - Add username error message and re-present form
     """
-    form = RegisterForm()
+    if not g.user:
+        form = RegisterForm()
 
-    if form.validate_on_submit():
-        # POST ROUTE FOR REGISTRATION FORM
-        try:
-            user = User.register(
-                username=form.username.data,
-                password=form.password.data,
-                email=form.email.data,
-                secret_question=form.secret_question.data,
-                secret_answer=form.secret_answer.data,
-            )
-            db.session.commit()
-        except IntegrityError:
-            form.username.errors.append("Username not available")
-            return render_template(
-                "auth.html", form=form, title="Register", q_display=""
-            )
+        if form.validate_on_submit():
+            # POST ROUTE FOR REGISTRATION FORM
+            try:
+                user = User.register(
+                    username=form.username.data,
+                    password=form.password.data,
+                    email=form.email.data,
+                    secret_question=form.secret_question.data,
+                    secret_answer=form.secret_answer.data,
+                )
+                db.session.commit()
+            except IntegrityError:
+                form.username.errors.append("Username not available")
+                return render_template(
+                    "auth.html", form=form, title="Register", q_display=""
+                )
 
-        session_login(user)
+            session_login(user)
 
-        # Spotify authorization flow
+            # Spotify authorization flow
+            auth = tekore.UserAuth(cred, scope)
+            auths[auth.state] = auth
 
-        auth_manager = SpotifyPKCE(
-            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
-            redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
-            scope=os.environ.get("SPOTIPY_SCOPE"),
-        )
+            return redirect(auth.url, 303)
 
-        # Send user to login with Spotify
-        auth_url = auth_manager.get_authorize_url()
-        return redirect(auth_url)
-
-    return render_template("auth.html", form=form, title="Register", q_display="")
+        return render_template("auth.html", form=form, title="Register", q_display="")
+    else:
+        abort(403)
 
 
-@app.route("/register", methods=["GET"])
-def show_registration_form():
+@app.route("/callback")
+def spotify_callback():
     """
     GET ROUTE:
-    - Show registration form
+    - Spotify callback route
     """
-    form = RegisterForm()
-
     if request.args.get("code"):
-        # Spotify authorization flow
+        user = User.query.get_or_404(session[CURR_USER_KEY])
 
-        auth_manager = SpotifyPKCE(
-            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
-            redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
-            scope=os.environ.get("SPOTIPY_SCOPE"),
-        )
+        code = request.args.get("code")
+        state = request.args.get("state", None)
+        auth = auths.pop(state, None)
 
-        CACHE_HANDLER.save_token_to_cache(request.args.get("code"))
+        if auth is None:
+            abort(500)
+
+        token = auth.request_token(code, state)
+        user.spotify_user_token = token.refresh_token
+        spotify.token = user.spotify_user_token
+        db.session.add(user)
+        db.session.commit()
+
+        session["user"] = state
+        users[state] = token
+
         return redirect("/user/home")
 
-    return render_template("auth.html", form=form, title="Register", q_display="")
+    abort(403)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -186,6 +230,9 @@ def login():
     POST ROUTE:
     - Handle user login
     """
+    if g.user:
+        return redirect("/user/home")
+
     form = LoginForm()
 
     if form.validate_on_submit():
@@ -193,7 +240,9 @@ def login():
 
         if user:
             session_login(user)
-            return redirect("/")
+            token = cred.refresh(user.spotify_user_token)
+            user.spotify_user_token = token
+            return redirect("/user/home")
         form.username.errors.append("Invalid username/password")
 
     return render_template("auth.html", form=form, title="Login", q_display="")
@@ -231,7 +280,7 @@ def forgot_password_check_username():
     form = ForgotPassUsername()
 
     if g.user:
-        return forbidden()
+        abort(403)
 
     if form.validate_on_submit():
         try:
@@ -260,6 +309,9 @@ def forgot_password_check_secret_question(user_id):
     - Check the secret answer
     - Redirect to '/forgot/<user_id>/new'
     """
+    if g.user:
+        abort(403)
+
     form = ForgotPassAnswer()
 
     if not session.get("password_reset"):
@@ -291,6 +343,9 @@ def forgot_password_new_password(user_id):
     - Save change to database
     - Redirect to login page
     """
+    if g.user:
+        abort(403)
+
     form = PasswordReset()
 
     if not session.get("password_reset"):
@@ -348,16 +403,11 @@ def homepage():
     - If user logged out, redirect to '/'
     - If logged in, return logged in homepage
     """
-    # if not g.user:
-    #     return redirect("/")
-    # else:
-    #     recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
-    recent_playlists = [
-        "coding_chill",
-        "coding_hip_hop",
-        "coding_heavy",
-        "Daughters at Neumos",
-    ]
+    if not g.user:
+        return redirect("/")
+    else:
+        recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
+
     return render_template("/user/home.html", recent_playlists=recent_playlists)
 
 
@@ -377,46 +427,46 @@ def edit_user(user_id):
     form = UserEditForm()
 
     if not g.user:
-        return forbidden()
-    else:
-        if form.validate_on_submit():
-            if not form.secret_question and not form.secret_question:
-                form.secret_question.errors.append(
-                    "Must change both secret question and answer together"
-                )
-                form.secret_answer.errors.append(
-                    "Must change both secret question and answer together"
-                )
+        abort(403)
+
+    if form.validate_on_submit():
+        if not form.secret_question and not form.secret_question:
+            form.secret_question.errors.append(
+                "Must change both secret question and answer together"
+            )
+            form.secret_answer.errors.append(
+                "Must change both secret question and answer together"
+            )
+            return redirect(f"/user/{user_id}/edit")
+
+        current_password = form.current_password.data
+        user = User.query.get_or_404(user_id)
+
+        if User.authenticate(user.username, current_password):
+            user.username = form.username.data or user.username
+            user.email = form.email.data or user.email
+            user.secret_question = form.secret_question.data or user.secret_question
+            user.secret_answer = form.secret_answer.data or user.secret_answer
+
+            new_password = form.new_password.data or None
+            retype_password = form.retype_password.data or None
+            if (
+                new_password is not None
+                and retype_password is not None
+                and new_password == retype_password
+            ):
+                user.password = User.hash_password(new_password)
+
+            try:
+                db.add(user)
+                db.commit()
+            except IntegrityError:
+                form.username.errors.append("Username unavailable")
                 return redirect(f"/user/{user_id}/edit")
 
-            current_password = form.current_password.data
-            user = User.query.get_or_404(user_id)
-
-            if User.authenticate(user.username, current_password):
-                user.username = form.username.data or user.username
-                user.email = form.email.data or user.email
-                user.secret_question = form.secret_question.data or user.secret_question
-                user.secret_answer = form.secret_answer.data or user.secret_answer
-
-                new_password = form.new_password.data or None
-                retype_password = form.retype_password.data or None
-                if (
-                    new_password is not None
-                    and retype_password is not None
-                    and new_password == retype_password
-                ):
-                    user.password = User.hash_password(new_password)
-
-                try:
-                    db.add(user)
-                    db.commit()
-                except IntegrityError:
-                    form.username.errors.append("Username unavailable")
-                    return redirect(f"/user/{user_id}/edit")
-
-                return redirect("/user/home")
-            else:
-                form.password.errors.append("Incorrect Password")
+            return redirect("/user/home")
+        else:
+            form.password.errors.append("Incorrect Password")
 
     return render_template(
         "/user/edit.html", form=form, title="Edit User", q_display=""
@@ -426,38 +476,37 @@ def edit_user(user_id):
 ###############
 # Band Routes #########################
 ###############
-def handle_spotify():
-    if CURR_USER_KEY in session:
-        auth_manager = spotipy.oauth2.SpotifyPKCE(
-            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
-            redirect_uri=os.environ.get("SPOTIPY_REDIRECT_URI"),
-            scope=os.environ.get("SPOTIPY_SCOPE"),
-            cache_handler=CACHE_HANDLER,
-        )
-        if auth_manager.validate_token(CACHE_HANDLER.get_cached_token()):
-            return spotipy.Spotify(auth_manager=auth_manager)
-    else:
-        auth_manager = SpotifyClientCredentials(
-            client_id=os.environ.get("SPOTIPY_CLIENT_ID"),
-            client_secret=os.environ.get("SPOTIPY_CLIENT_SECRET"),
-            cache_handler=CACHE_HANDLER,
-        )
-        return spotipy.Spotify(
-            auth_manager=auth_manager,
-        )
 
 
-@app.route("/band/<band_name>")
-def show_band_details(band_name):
+@app.route("/band/<band_id>")
+def show_band_details(band_id):
     """
     Todo - Shows band details
     """
 
-    spotify = handle_spotify()
-
-    band = Band.query.filter_by(name=band_name).first()
+    band = Band.query.filter_by(spotify_artist_id=band_id).first()
 
     if band is None:
+
+        ##################################
+        # Spotify
+        #   - Get band
+        #   - Set band_image variable
+        res = spotify.artist(band_id)
+        json_res = res.json()
+        sp_band = json.loads(json_res)
+
+        band_name = sp_band["name"]
+
+        try:
+            band_image = sp_band["images"][0]["url"]
+        except IndexError:
+            band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
+        # Spotify End
+        #################################
+
+        ###############################
+        # Setlist.fm search band
         url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
         res = requests.get(
             url,
@@ -468,26 +517,68 @@ def show_band_details(band_name):
             params=[("artistName", band_name)],
         ).json()
 
-        fm_band = res["artist"][0]
+        fm_band = {}
 
-        sp_res = spotify.search(q=fm_band["name"], type="artist")
-        sp_items = sp_res["artists"]["items"]
+        try:
+            for band in res["artist"]:
+                if band["name"] == band_name:
+                    fm_band = band
+        except KeyError:
+            fm_band = None
+        # Setlist.fm search band end
+        ##############################
 
-        return jsonify(sp_items)
+        ##############################
+        # Setlist.fm setlists search
+        if fm_band is not None:
+            url = (
+                os.environ.get("SETLIST_FM_BASE_URL")
+                + f"/artist/{fm_band['mbid']}/setlists"
+            )
 
-    #     bit_search_name = Band.bit_prep_band_name(fm_band.name)
+            res = requests.get(
+                url,
+                headers={
+                    "Accept": "application/json",
+                    "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+                },
+            ).json()
 
-    #     url = (
-    #         os.environ.get("BANDSINTOWN_BASE_URL")
-    #         + "/artists"
-    #         + bit_search_name
-    #         + "/events"
-    #     )
-    #     upcoming_shows = requests.get(url)
+            setlists = res["setlist"]
+        else:
+            setlists = None
+        # Setlist.fm setlists search end
+        ##############################
 
-    # return render_template(
-    #     "/band/band-detail.html", band=sp_band, upcoming_shows=upcoming_shows
-    # )
+        ################################
+        # Bandsintown Upcoming Events Search
+        bit_search_name = Band.bit_prep_band_name(band_name)
+
+        url = (
+            os.environ.get("BANDSINTOWN_BASE_URL")
+            + "/artists/"
+            + bit_search_name
+            + "/events/"
+        )
+        upcoming_shows = requests.get(
+            url,
+            headers={"accept": "application/json"},
+            params=[("app_id", os.environ.get("BIT_APP_ID"))],
+        ).json()
+
+        if type(upcoming_shows) != list:
+            upcoming_shows = None
+
+        # Bandsintown Upcoming Events Search End
+        ###################################
+
+    return render_template(
+        "/band/band-detail.html",
+        band=sp_band,
+        upcoming_shows=upcoming_shows,
+        band_image=band_image,
+        setlists=setlists,
+    )
 
     # If logged in - band, setlists, upcoming_shows, band_image(url)
     # If not - band, band_image(url)
@@ -508,18 +599,12 @@ def search_results():
     """
     if request.args.get("search"):
         search = request.args.get("search")
-        url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
-        res = requests.get(
-            url,
-            headers={
-                "Accept": "application/json",
-                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-            },
-            params=[("artistName", search)],
-        ).json()
+        res = spotify.search("artist: " + search, types=["artist"])
+        json_res = res[0].json()
+        band_results = json.loads(json_res)
 
         return render_template(
-            "/band/search.html", search=search, band_results=res["artist"]
+            "/band/search.html", search=search, band_results=band_results["items"]
         )
     else:
         return render_template("band/search.html")

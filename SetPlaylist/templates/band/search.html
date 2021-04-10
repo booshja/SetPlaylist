@@ -9,7 +9,7 @@
                 for "{{search}}"
             </h2>
             {% else %}
-            <h1 class="results-hero__feedbac__headline">Search</h1>
+            <h1 class="results-hero__feedback__headline">Search</h1>
             {% endif %}
         </div>
     </div>
@@ -35,9 +35,7 @@
             <ul>
                 {% for band in band_results %}
                 <li class="results-list__bands__band">
-                    <a href="/band/{{ format_name(band.name) }}"
-                        >{{band.name}}</a
-                    >
+                    <a href="/band/{{ band.id }}">{{band.name}}</a>
                 </li>
                 {% endfor %}
             </ul>
