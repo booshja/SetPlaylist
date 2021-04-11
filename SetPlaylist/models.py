@@ -235,8 +235,9 @@ class Playlist(db.Model):
         hype = hype
 
         for song in hype:
-            total_seconds += hype[song]["duration"]
-            total_songs += 1
+            if song != "details":
+                total_seconds += hype[song]["duration"]
+                total_songs += 1
 
         seconds = total_seconds % 60
         minutes = int((total_seconds - seconds) / 60)

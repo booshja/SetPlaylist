@@ -717,17 +717,26 @@ def show_hype_setlist(band_id):
 
     hype = {}
     hype["details"] = {}
+    order = [1, 3, 5, 7, 9, 8, 6, 4, 2, 0]
+    setlist = []
 
     for song in res:
         spotify_song_id = song.id
         name = song.name
         duration = floor(int(song.duration_ms) / 1000)
 
-        hype[spotify_song_id] = {
-            "spotify_song_id": spotify_song_id,
-            "name": name,
-            "duration": duration,
-        }
+        setlist.append(
+            {
+                "spotify_song_id": spotify_song_id,
+                "name": name,
+                "duration": duration,
+            }
+        )
+
+    for i in order:
+        song = setlist[i]
+        song_id = song["spotify_song_id"]
+        hype[song_id] = song
 
     duration = Playlist.calc_duration(hype)
 
