@@ -519,10 +519,9 @@ def show_band_details(band_id):
 
         fm_band = {}
 
-        # FIXME: This is checking for only EXACT matches, need to check for case-insensitive
         try:
             for band in res["artist"]:
-                if band["name"] == band_name:
+                if band["name"].lower() == band_name.lower():
                     fm_band = band
         except KeyError:
             fm_band = None
