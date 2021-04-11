@@ -226,6 +226,26 @@ class Playlist(db.Model):
             "venue_name": venue_name,
         }
 
+    @classmethod
+    def calc_duration(cls, hype):
+        total_seconds = 0
+        total_songs = 0
+        duration = []
+
+        hype = hype
+
+        for song in hype:
+            total_seconds += hype[song]["duration"]
+            total_songs += 1
+
+        seconds = total_seconds % 60
+        minutes = int((total_seconds - seconds) / 60)
+
+        duration.append(str(minutes) + " min, " + str(seconds) + " sec")
+        duration.append(total_songs)
+
+        return duration
+
     def __repr__(self):
         """
         A more readable representation of the instance
@@ -310,15 +330,15 @@ class Song(db.Model):
 
     spotify_song_id = db.Column(db.Text, nullable=False)
 
-    spotify_song_uri = db.Column(db.Text, nullable=False)
-
     name = db.Column(db.Text, nullable=False)
 
     album_name = db.Column(db.Text, nullable=False)
 
-    length = db.Column(db.Integer, nullable=False)
+    duration = db.Column(db.Integer, nullable=False)
 
-    band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
+    spotify_url = db.Column(db.Text, nullable=False)
+
+    band_spotify_id = db.Column(db.Integer, db.ForeignKey("bands.spotify_artist_id"))
 
     def __repr__(self):
         """

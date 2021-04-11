@@ -5,7 +5,7 @@ endblock title %} {% block content %}
         <div class="playlist-hero__feedback container">
             <h1 class="playlist-hero__feedback__headline">{{band['name']}}</h1>
             <h2 class="playlist-hero__feedback__sub-headline">
-                {{details['venue_name']}}
+                {{playlist['details']['venue_name']}}
             </h2>
         </div>
     </div>
@@ -16,8 +16,8 @@ endblock title %} {% block content %}
             <h3 class="playlist__headline">Setlist</h3>
             {% if playlist %}
             <ol class="playlist__list">
-                {% for song in playlist %}
-                <li class="playlist__list__song">{{song}}</li>
+                {% for song in playlist if song != 'details' %}
+                <li class="playlist__list__song">{{playlist[song]['name']}}</li>
                 {% endfor %}
             </ol>
             {% else %}
@@ -32,11 +32,12 @@ endblock title %} {% block content %}
                 Songs Not Included
             </h3>
             <p class="playlist__desc">
-                These songs were not included because reasons?
+                These songs could not be included in the playlist due to being
+                covers or not available in Spotify.
             </p>
             <ol class="playlist__list">
                 {% for song in not_included %}
-                <li class="playlist__list__song">{{song.name}}</li>
+                <li class="playlist__list__song">{{song['name']}}</li>
                 {% endfor %}
             </ol>
         </div>
@@ -57,20 +58,20 @@ endblock title %} {% block content %}
             <ul class="right-col__details__list">
                 <li class="right-col__details__list__item">{{band['name']}}</li>
                 <li class="right-col__details__list__item">
-                    {{details['venue_name']}}
+                    {{playlist['details']['venue_name']}}
                 </li>
                 <li class="right-col__details__list__item">
-                    {{details['venue_loc']}}
+                    {{playlist['details']['venue_loc']}}
                 </li>
                 <li class="right-col__details__list__item">
-                    {{details['event_date']}}
+                    {{playlist['details']['event_date']}}
                 </li>
-                {% if saved==True %}
+                {% if saved==True or duration==True %}
                 <li class="right-col__details__list__item">
-                    Songs in Playlist: {{playlist.length}}
+                    Songs in Playlist: {{playlist['details']['length']}}
                 </li>
                 <li class="right-col__details__list__item">
-                    Total Playlist Length: {{playlist.length}}
+                    Total Playlist Length: {{playlist['details']['duration']}}
                 </li>
                 {% endif %}
             </ul>

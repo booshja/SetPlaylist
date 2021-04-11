@@ -26,6 +26,7 @@ from models import (
     connect_db,
     db,
 )
+from math import floor
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
@@ -615,8 +616,7 @@ def search_results():
 ###################
 
 
-# TODO:
-@app.route("/playlist/<band_id>/<setlist_id>")
+@app.route("/playlist/show/<band_id>/<setlist_id>")
 def show_setlist(band_id, setlist_id):
     """
     GET ROUTE: - Shows the setlist data that was selected
@@ -644,16 +644,33 @@ def show_setlist(band_id, setlist_id):
         for song in set["song"]:
             playlist.append(song["name"])
 
+    # Just added functionality to show hype playlist, but broke the way the setlist display shows because it'll be a better model using the hype one
+
+    # TODO: FIRST
+    # FIXME: Fix playlist dict that I'm sending over so it's in the same format as the hype one
+    # TODO: SECOND
+    # FIXME: Change the order of the "hype" playlist so it's displayed diff
+    # TODO: THIRD
+    # FIXME: Post route for adding playlist to user spotify
+
     return render_template(
         "/playlist/playlist.html",
         saved=False,
         band=sp_band,
         details=details,
         playlist=playlist,
+        duration=False,
     )
 
 
-@app.route("/playlist/<int:playlist_id>")
+@app.route("/playlist/create/<band_id>/<setlist_id>", methods=["POST"])
+def create_playlist():
+    # create a playlist and save it to the database and the user's spotify here
+    # return redirect to either 'playlist/success' or 'playlist/failure'
+    return None
+
+
+@app.route("/playlist/created/<int:playlist_id>")
 def show_created_playlist(playlist_id):
     """
     Todo - Shows the setlist that was created
@@ -662,19 +679,54 @@ def show_created_playlist(playlist_id):
     return render_template(
         "/playlist/playlist.html",
         saved=True,
+        duration=True,
         # playlist=playlist,
         # not_included=not_included,
     )
 
 
-@app.route("/playlist/<int:band_id>/hype")
+@app.route("/playlist/hype/<band_id>")
 def show_hype_setlist(band_id):
     """
     Todo - Shows the setlist created from band's top songs
     """
-    saved = True
+
+    band = Band.query.filter_by(spotify_artist_id=band_id).first()
+
+    if band is None:
+        res = spotify.artist(band_id)
+        json_res = res.json()
+        band = json.loads(json_res)
+
+    res = spotify.artist_top_tracks(band_id, "US")
+
+    hype = {}
+
+    for song in res:
+        spotify_song_id = song.id
+        name = song.name
+        duration = floor(int(song.duration_ms) / 1000)
+
+        hype[spotify_song_id] = {
+            "spotify_song_id": spotify_song_id,
+            "name": name,
+            "duration": duration,
+        }
+
+    duration = Playlist.calc_duration(hype)
+
+    hype["details"] = {}
+
+    hype["details"]["duration"] = duration[0]
+    hype["details"]["length"] = duration[1]
+    hype["details"]["venue_name"] = "Wherever you'd like!"
+    hype["details"]["venue_loc"] = "Your speakers"
+    hype["details"]["event_date"] = "Whenever you'd like!"
+
     # playlist (Playlist object saved to db, created from band's top songs from spotify), saved
-    return render_template("/playlist/playlist.html", saved=saved)
+    return render_template(
+        "/playlist/playlist.html", playlist=hype, band=band, duration=True, saved=False
+    )
 
 
 @app.route("/playlist/success")

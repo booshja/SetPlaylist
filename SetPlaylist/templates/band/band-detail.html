@@ -9,7 +9,9 @@ endblock %} {% block content %}
 {% if g.user %}
 <section id="band-links">
     <div class="band-links container">
-        <a href="#" class="band-links__link">Create Hype Up Playlist</a>
+        <a href="/playlist/hype/{{band['id']}}" class="band-links__link"
+            >Create Hype Up Playlist</a
+        >
         <a href="{{band['external_urls']['spotify']}}" class="band-links__link"
             >{{band['name']}} on Spotify</a
         >
@@ -25,7 +27,7 @@ endblock %} {% block content %}
             {% else %} {% for set in setlists %}
             <li>
                 <a
-                    href="/playlist/{{band['id']}}/{{set['id']}}"
+                    href="/playlist/show/{{band['id']}}/{{set['id']}}"
                     class="band-setlists__list__setlist"
                     >{{format_setlist_display(set)}}</a
                 >
