@@ -69,7 +69,7 @@ toolbar = DebugToolbarExtension(app)
 connect_db(app)
 
 ##################
-# Global Methods ######################
+# Global Methods ################################################
 ##################
 
 
@@ -106,6 +106,9 @@ def utility_processor():
         return fixed
 
     def format_setlist_display(set):
+        """
+        Returns setlist details arranged in venue name - event date - venue location
+        """
         venue_name = set["venue"]["name"]
         event_date = set["eventDate"]
         venue_loc = (
@@ -130,7 +133,7 @@ def unformat_name(name):
 
 
 ##############################
-# User Login/Logout/Register ##########
+# User Login/Logout/Register ####################################
 ##############################
 
 
@@ -261,7 +264,7 @@ def logout():
 
 
 #########################
-# Reset Password Routes ###############
+# Reset Password Routes #########################################
 #########################
 
 
@@ -375,7 +378,7 @@ def forgot_password_new_password(user_id):
 
 
 ################
-# Landing Page ########################
+# Landing Page ##################################################
 ################
 
 
@@ -393,7 +396,7 @@ def landing():
 
 
 ###############
-# User Routes #########################
+# User Routes ###################################################
 ###############
 
 
@@ -412,7 +415,7 @@ def homepage():
     return render_template("/user/home.html", recent_playlists=recent_playlists)
 
 
-@app.route("/user/<int:user_id>/edit", methods=["GET", "POST"])
+@app.route("/user/edit/<int:user_id>", methods=["GET", "POST"])
 def edit_user(user_id):
     """
     GET ROUTE:
@@ -420,7 +423,7 @@ def edit_user(user_id):
     --------------------
     POST ROUTE:
     - Checks password
-    - If passes
+    - If passes:
         - Updates any data changed
         - Commits changes to database
         - Redirects to User Homepage
@@ -475,14 +478,20 @@ def edit_user(user_id):
 
 
 ###############
-# Band Routes #########################
+# Band Routes ###################################################
 ###############
 
 
 @app.route("/band/<band_id>")
 def show_band_details(band_id):
     """
-    Todo - Shows band details
+    - Check if band already in database
+    - Get band from Spotify with band_id
+    - Sets band_image and band_name
+    - Get band from Setlist.fm using band_name
+    - Get setlists for band from Setlist.fm using Setlist.fm mbid
+    - Get upcoming shows for band from Bandsintown using band_name
+    - Display data
     """
 
     band = Band.query.filter_by(spotify_artist_id=band_id).first()
@@ -581,12 +590,9 @@ def show_band_details(band_id):
         setlists=setlists,
     )
 
-    # If logged in - band, setlists, upcoming_shows, band_image(url)
-    # If not - band, band_image(url)
-
 
 ######################
-# Band Search Routes ##################
+# Band Search Routes ############################################
 ######################
 
 
@@ -612,14 +618,18 @@ def search_results():
 
 
 ###################
-# Playlist Routes #####################
+# Playlist Routes ###############################################
 ###################
 
 
 @app.route("/playlist/show/<band_id>/<setlist_id>")
 def show_setlist(band_id, setlist_id):
     """
-    GET ROUTE: - Shows the setlist data that was selected
+    GET ROUTE:
+    - Get band from Spotify with band_id
+    - Get setlist from Setlist.fm with setlist_id
+    - Arrange data for display
+    - Display page with data
     """
     res = spotify.artist(band_id)
     json_res = res.json()
@@ -634,37 +644,39 @@ def show_setlist(band_id, setlist_id):
         },
     ).json()
 
-    details = Playlist.details(res)
+    playlist = {}
 
     setlist = res["sets"]["set"]
 
-    playlist = []
+    playlist["details"] = {}
 
     for set in setlist:
         for song in set["song"]:
-            playlist.append(song["name"])
+            name = song["name"]
+            playlist[name] = {"name": name}
 
-    # Just added functionality to show hype playlist, but broke the way the setlist display shows because it'll be a better model using the hype one
-
-    # TODO: FIRST
-    # FIXME: Fix playlist dict that I'm sending over so it's in the same format as the hype one
-    # TODO: SECOND
-    # FIXME: Change the order of the "hype" playlist so it's displayed diff
-    # TODO: THIRD
-    # FIXME: Post route for adding playlist to user spotify
+    playlist["details"]["length"] = len(playlist) - 1
+    playlist["details"]["venue_name"] = res["venue"]["name"]
+    playlist["details"]["venue_loc"] = (
+        res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
+    )
+    playlist["details"]["event_date"] = res["eventDate"]
 
     return render_template(
         "/playlist/playlist.html",
-        saved=False,
         band=sp_band,
-        details=details,
         playlist=playlist,
+        saved=False,
         duration=False,
     )
 
 
 @app.route("/playlist/create/<band_id>/<setlist_id>", methods=["POST"])
 def create_playlist():
+    """
+    POST ROUTE:
+    -
+    """
     # create a playlist and save it to the database and the user's spotify here
     # return redirect to either 'playlist/success' or 'playlist/failure'
     return None
@@ -688,7 +700,10 @@ def show_created_playlist(playlist_id):
 @app.route("/playlist/hype/<band_id>")
 def show_hype_setlist(band_id):
     """
-    Todo - Shows the setlist created from band's top songs
+    GET ROUTE:
+    - Get band's top 10 songs from spotify using band_id
+    - Arrange data
+    - Return band, playlist dict, page config variables (duration, saved)
     """
 
     band = Band.query.filter_by(spotify_artist_id=band_id).first()
@@ -701,6 +716,7 @@ def show_hype_setlist(band_id):
     res = spotify.artist_top_tracks(band_id, "US")
 
     hype = {}
+    hype["details"] = {}
 
     for song in res:
         spotify_song_id = song.id
@@ -715,15 +731,17 @@ def show_hype_setlist(band_id):
 
     duration = Playlist.calc_duration(hype)
 
-    hype["details"] = {}
-
     hype["details"]["duration"] = duration[0]
     hype["details"]["length"] = duration[1]
     hype["details"]["venue_name"] = "Wherever you'd like!"
     hype["details"]["venue_loc"] = "Your speakers"
     hype["details"]["event_date"] = "Whenever you'd like!"
 
-    # playlist (Playlist object saved to db, created from band's top songs from spotify), saved
+    # TODO: SECOND
+    # * Change the order of the "hype" playlist so it's displayed diff
+    # TODO: THIRD
+    # * Post route for adding playlist to user spotify
+
     return render_template(
         "/playlist/playlist.html", playlist=hype, band=band, duration=True, saved=False
     )
@@ -747,20 +765,29 @@ def show_failure_page():
 
 
 #######################
-# Custom Error Routes #################
+# Custom Error Routes ###########################################
 #######################
 
 
 @app.errorhandler(403)
 def forbidden(e):
+    """
+    Unauthorized access error
+    """
     return render_template("/errors/403.html"), 403
 
 
 @app.errorhandler(404)
 def page_not_found(e):
+    """
+    Page not found error
+    """
     return render_template("/errors/404.html"), 404
 
 
 @app.errorhandler(500)
 def server_error(e):
+    """
+    Internal Error
+    """
     return render_template("/errors/500.html"), 500

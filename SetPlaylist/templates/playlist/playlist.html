@@ -66,10 +66,10 @@ endblock title %} {% block content %}
                 <li class="right-col__details__list__item">
                     {{playlist['details']['event_date']}}
                 </li>
-                {% if saved==True or duration==True %}
                 <li class="right-col__details__list__item">
-                    Songs in Playlist: {{playlist['details']['length']}}
+                    Songs: {{playlist['details']['length']}}
                 </li>
+                {% if saved==True or duration==True %}
                 <li class="right-col__details__list__item">
                     Total Playlist Length: {{playlist['details']['duration']}}
                 </li>
