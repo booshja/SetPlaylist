@@ -185,50 +185,6 @@ class Playlist(db.Model):
     band = db.relationship("Band")
 
     @classmethod
-    def details(cls, res):
-        """
-        Returns a details dict for the setlist page
-        """
-        name = res["artist"]["name"] + " at " + res["venue"]["name"]
-
-        try:
-            tour_name = res["tour"]["name"]
-        except KeyError:
-            tour_name = "N/A"
-
-        try:
-            venue_name = res["venue"]["name"]
-        except KeyError:
-            venue_name = "N/A"
-
-        try:
-            venue_loc = (
-                res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["stateCode"]
-            )
-        except KeyError:
-            venue_loc = "N/A"
-
-        event_date = res["eventDate"]
-
-        description = (
-            res["artist"]["name"]
-            + " at "
-            + venue_name
-            + ", "
-            + venue_loc
-            + " on "
-            + event_date
-        )
-        return {
-            "name": name,
-            "tour_name": tour_name,
-            "venue_loc": venue_loc,
-            "event_date": event_date,
-            "description": description,
-            "venue_name": venue_name,
-        }
-
-    @classmethod
     def calc_duration(cls, hype):
         total_seconds = 0
         total_songs = 0
@@ -290,8 +246,6 @@ class Band(db.Model):
     setlistfm_artist_id = db.Column(db.Text, nullable=False)
 
     name = db.Column(db.Text, nullable=False)
-
-    bio = db.Column(db.Text)
 
     photo = db.Column(db.Text)
 

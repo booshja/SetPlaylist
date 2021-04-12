@@ -7,7 +7,6 @@ import urllib.parse
 from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request, session, jsonify, abort
 from flask_debugtoolbar import DebugToolbarExtension
-from tekore._client.api import playlist
 from forms import (
     ForgotPassAnswer,
     ForgotPassUsername,
@@ -250,10 +249,6 @@ def login():
 
         if user:
             session_login(user)
-            token = cred.refresh(user.spotify_user_token)
-            user.spotify_user_token = token
-            db.session.add(user)
-            db.session.commit()
             return redirect("/user/home")
         form.username.errors.append("Invalid username/password")
 
@@ -678,7 +673,7 @@ def show_setlist(band_id, setlist_id):
     )
 
 
-@app.route("/playlist/create/<band_id>/<setlist_id>", methods=["POST"])
+@app.route("/playlist/create/<band_id>/<setlist_id>")
 def create_playlist(band_id, setlist_id):
     """
     POST ROUTE:
@@ -687,30 +682,91 @@ def create_playlist(band_id, setlist_id):
     user = session.get("user", None)
     token = users.get(user, None)
 
-    if user is None or token is None:
-        session.pop("user", None)
-        return abort(403)
+    # if user is None or token is None:
+    #     session.pop("user", None)
+    #     return abort(403)
 
-    res = spotify.artist(band_id).json()
-    sp_band = json.loads(res)
+    u = User.query.get_or_404(session[CURR_USER_KEY])
 
-    url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
-    res = requests.get(
-        url,
-        headers={
-            "Accept": "application/json",
-            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-        },
-    ).json()
+    band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
+
+    if band_db is None:
+        res = spotify.artist(band_id).json()
+        sp_band = json.loads(res)
+
+        setlist_fm_artist_id = res["artist"]["mbid"]
+        try:
+            band_image = sp_band["images"][0]["url"]
+        except IndexError:
+            band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
+        band_db = Band(
+            spotify_artist_id=band_id,
+            setlistfm_artist_id=setlist_fm_artist_id,
+            name=sp_band["name"],
+            photo=band_image,
+        )
+        db.session.add(band_db)
+        db.session.commit()
+
+        playlist_db = Playlist.query.filter_by(
+            band_id=band_id, setlistfm_setlist_id=setlist_id
+        ).first()
+
+        if playlist_db is None:
+            url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
+            res = requests.get(
+                url,
+                headers={
+                    "Accept": "application/json",
+                    "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+                },
+            ).json()
+
+            setlist = res["sets"]["set"]
+
+            venue_name = res["venue"]["name"]
+            play_name = band_db.name + " @ " + venue_name
+            event_date = res["eventDate"]
+            tour_name = res["tour"]["name"]
+            venue_loc = (
+                res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
+            )
+            play_desc = (
+                play_name
+                + " in "
+                + venue_loc
+                + " on "
+                + event_date
+                + ". Tour - "
+                + tour_name
+            )
+            length = 0
+            band_id = band_db.id
+
+            playlist_db = Playlist(
+                spotify_playlist_id="None Yet",
+                setlistfm_setlist_id=setlist_id,
+                name=play_name,
+                description=play_desc,
+                tour_name=tour_name,
+                venue_name=venue_name,
+                event_date=event_date,
+                venue_loc=venue_loc,
+                length=length,
+                band_id=band_db.id,
+            )
+            db.session.add(playlist_db)
+            db.session.commit()
+
+    new_relate_playlist = User_Playlist.query.filter_by(
+        user_id=u.id, playlist_id=playlist_db.id
+    ).first()
+
+    if new_relate_playlist is None:
+        new_relate_playlist = User_Playlist(user_id=u.id, playlist_id=playlist_db.id)
 
     playlist = {}
-
-    setlist = res["sets"]["set"]
-
     playlist["details"] = {}
-
-    # TODO: Make Playlist instance so I can add songs to it via 'playlists_songs'
-    # * Add the playlist to the user's playlists in the database
 
     # TODO: Get spotify song id's for each song added to playlist
     # * Make Song instances for each song
@@ -730,17 +786,16 @@ def create_playlist(band_id, setlist_id):
             playlist[name] = {"name": name}
 
     playlist["details"]["length"] = len(playlist) - 1
-    playlist["details"]["venue_name"] = res["venue"]["name"]
-    playlist["details"]["venue_loc"] = (
-        res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
-    )
-    playlist["details"]["event_date"] = res["eventDate"]
+    playlist_db.length = len(playlist) - 1
+    db.session.add(playlist_db)
+    db.session.commit()
+    playlist["details"]["venue_name"] = playlist_db.venue_name
+    playlist["details"]["venue_loc"] = playlist_db.event_date
+    playlist["details"]["event_date"] = playlist_db.event_date
 
     if token.is_expiring:
         token = cred.refresh(token)
         users[user] = token
-
-    u = User.query.get_or_404(session[CURR_USER_KEY])
 
     with spotify.token_as(token):
         spotify.playlist_create(u.spotify_user_id)
