@@ -7,6 +7,7 @@ import urllib.parse
 from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request, session, jsonify, abort
 from flask_debugtoolbar import DebugToolbarExtension
+from tekore._client.api import playlist
 from forms import (
     ForgotPassAnswer,
     ForgotPassUsername,
@@ -214,6 +215,11 @@ def spotify_callback():
         token = auth.request_token(code, state)
         user.spotify_user_token = token.refresh_token
         spotify.token = user.spotify_user_token
+
+        with spotify.token_as(token):
+            res = spotify.current_user().json()
+            user_profile = json.loads(res)
+            user.spotify_user_id = user_profile["id"]
         db.session.add(user)
         db.session.commit()
 
@@ -246,6 +252,8 @@ def login():
             session_login(user)
             token = cred.refresh(user.spotify_user_token)
             user.spotify_user_token = token
+            db.session.add(user)
+            db.session.commit()
             return redirect("/user/home")
         form.username.errors.append("Invalid username/password")
 
@@ -631,9 +639,8 @@ def show_setlist(band_id, setlist_id):
     - Arrange data for display
     - Display page with data
     """
-    res = spotify.artist(band_id)
-    json_res = res.json()
-    sp_band = json.loads(json_res)
+    res = spotify.artist(band_id).json()
+    sp_band = json.loads(res)
 
     url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
     res = requests.get(
@@ -672,17 +679,86 @@ def show_setlist(band_id, setlist_id):
 
 
 @app.route("/playlist/create/<band_id>/<setlist_id>", methods=["POST"])
-def create_playlist():
+def create_playlist(band_id, setlist_id):
     """
     POST ROUTE:
     -
     """
+    user = session.get("user", None)
+    token = users.get(user, None)
+
+    if user is None or token is None:
+        session.pop("user", None)
+        return abort(403)
+
+    res = spotify.artist(band_id).json()
+    sp_band = json.loads(res)
+
+    url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
+    res = requests.get(
+        url,
+        headers={
+            "Accept": "application/json",
+            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+        },
+    ).json()
+
+    playlist = {}
+
+    setlist = res["sets"]["set"]
+
+    playlist["details"] = {}
+
+    # TODO: Make Playlist instance so I can add songs to it via 'playlists_songs'
+    # * Add the playlist to the user's playlists in the database
+
+    # TODO: Get spotify song id's for each song added to playlist
+    # * Make Song instances for each song
+    # * Add each instance to the relationship with the playlist
+    # * Create a new Spotify playlist for user
+    # * Add songs to the Spotify playlist with the song spotify id's
+    # * Return redirect to the success/fail page with the Spotify playlist url as a variable
+
+    for set in setlist:
+        for song in set["song"]:
+            res = spotify.search(
+                query=("track:" + song["name"] + "%20artist:" + sp_band["name"]),
+                types="track",
+                limit=1,
+            ).json()
+            name = song["name"]
+            playlist[name] = {"name": name}
+
+    playlist["details"]["length"] = len(playlist) - 1
+    playlist["details"]["venue_name"] = res["venue"]["name"]
+    playlist["details"]["venue_loc"] = (
+        res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
+    )
+    playlist["details"]["event_date"] = res["eventDate"]
+
+    if token.is_expiring:
+        token = cred.refresh(token)
+        users[user] = token
+
+    u = User.query.get_or_404(session[CURR_USER_KEY])
+
+    with spotify.token_as(token):
+        spotify.playlist_create(u.spotify_user_id)
+
+    # TODO: THIRD
+    # * Post route for adding playlist to user spotify
     # create a playlist and save it to the database and the user's spotify here
     # return redirect to either 'playlist/success' or 'playlist/failure'
-    return None
+    return render_template(
+        "/playlist/playlist.html",
+        playlist=playlist,
+        band=sp_band,
+        duration=True,
+        saved=True,
+    )
 
 
-@app.route("/playlist/created/<int:playlist_id>")
+@app.route("/playlist/created/<playlist_id>")
 def show_created_playlist(playlist_id):
     """
     Todo - Shows the setlist that was created
@@ -745,11 +821,6 @@ def show_hype_setlist(band_id):
     hype["details"]["venue_name"] = "Wherever you'd like!"
     hype["details"]["venue_loc"] = "Your speakers"
     hype["details"]["event_date"] = "Whenever you'd like!"
-
-    # TODO: SECOND
-    # * Change the order of the "hype" playlist so it's displayed diff
-    # TODO: THIRD
-    # * Post route for adding playlist to user spotify
 
     return render_template(
         "/playlist/playlist.html", playlist=hype, band=band, duration=True, saved=False

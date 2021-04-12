@@ -66,6 +66,8 @@ class User(db.Model):
 
     spotify_user_token = db.Column(db.Text, default=None)
 
+    spotify_user_id = db.Column(db.Text, default=None)
+
     favorites = db.relationship("Band", secondary="favorites")
 
     playlists = db.relationship(
@@ -158,7 +160,7 @@ class Playlist(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    spotify_playlist_id = db.Column(db.Text, nullable=False)
+    spotify_playlist_id = db.Column(db.Text, default=None, nullable=False)
 
     setlistfm_setlist_id = db.Column(db.Text, nullable=False)
 
@@ -339,7 +341,7 @@ class Song(db.Model):
 
     spotify_url = db.Column(db.Text, nullable=False)
 
-    band_spotify_id = db.Column(db.Integer, db.ForeignKey("bands.spotify_artist_id"))
+    band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
 
     def __repr__(self):
         """
