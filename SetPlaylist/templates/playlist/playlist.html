@@ -5,7 +5,7 @@ endblock title %} {% block content %}
         <div class="playlist-hero__feedback container">
             <h1 class="playlist-hero__feedback__headline">{{band['name']}}</h1>
             <h2 class="playlist-hero__feedback__sub-headline">
-                {{playlist['details']['venue_name']}}
+                {{playlist.venue_name}}
             </h2>
         </div>
     </div>
@@ -16,9 +16,11 @@ endblock title %} {% block content %}
             <h3 class="playlist__headline">Setlist</h3>
             {% if playlist %}
             <ol class="playlist__list">
-                {% for song in playlist if song != 'details' %}
-                <li class="playlist__list__song">{{playlist[song]['name']}}</li>
-                {% endfor %}
+                {% if playlist.songz %} {% for song in playlist.songz %}
+                <li class="playlist__list__song">{{song}}</li>
+                {% endfor %} {% else %} {% for song in playlist.songs %}
+                <li class="playlist__list__song">{{song.name}}</li>
+                {% endfor %} {% endif %}
             </ol>
             {% else %}
             <p class="playlist__list__error">
@@ -32,22 +34,18 @@ endblock title %} {% block content %}
                 Songs Not Included
             </h3>
             <p class="playlist__desc">
-                These songs could not be included in the playlist due to being
-                covers or not available in Spotify.
+                Some songs may not be included in the playlist due to being
+                covers, or not being available through Spotify.
             </p>
-            <ol class="playlist__list">
-                {% for song in not_included %}
-                <li class="playlist__list__song">{{song['name']}}</li>
-                {% endfor %}
-            </ol>
         </div>
         {% endif %}
     </div>
     <div class="right-col">
         <div class="right-col__links container">
-            <a href="#" class="right-col__links__link">Save Playlist</a>
-            <a href="#" class="right-col__links__link"
-                >Add Playlist to Spotify</a
+            <a
+                href="/playlist/create/{{playlist.band_id}}/{{playlist.setlistfm_setlist_id}}"
+                class="right-col__links__link"
+                >Save Playlist</a
             >
             <a href="#" class="right-col__links__link"
                 >{{band['name']}} on Spotify</a
@@ -58,20 +56,20 @@ endblock title %} {% block content %}
             <ul class="right-col__details__list">
                 <li class="right-col__details__list__item">{{band['name']}}</li>
                 <li class="right-col__details__list__item">
-                    {{playlist['details']['venue_name']}}
+                    {{playlist.venue_name}}
                 </li>
                 <li class="right-col__details__list__item">
-                    {{playlist['details']['venue_loc']}}
+                    {{playlist.venue_loc}}
                 </li>
                 <li class="right-col__details__list__item">
-                    {{playlist['details']['event_date']}}
+                    {{playlist.event_date}}
                 </li>
                 <li class="right-col__details__list__item">
-                    Songs: {{playlist['details']['length']}}
+                    Songs: {{playlist.length}}
                 </li>
                 {% if saved==True or duration==True %}
                 <li class="right-col__details__list__item">
-                    Total Playlist Length: {{playlist['details']['duration']}}
+                    Total Playlist Length: {{playlist.duration}}
                 </li>
                 {% endif %}
             </ul>

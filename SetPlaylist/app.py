@@ -52,10 +52,12 @@ APP_TOKEN = tekore.request_client_token(
 )
 
 conf = tekore.config_from_environment(return_refresh=True)
-cred = tekore.Credentials(*conf)
-spotify = tekore.Spotify(APP_TOKEN)
+cred = tekore.RefreshingCredentials(*conf)
+spotify = tekore.Spotify(APP_TOKEN, chunked_on=True)
+spotify.chunked_on = False
 
 auths = {}
+auths["APP_TOKEN"] = APP_TOKEN
 users = {}
 scope = (
     tekore.scope.playlist_modify_private
@@ -211,19 +213,17 @@ def spotify_callback():
         if auth is None:
             abort(500)
 
-        token = auth.request_token(code, state)
+        token = cred.request_user_token(code)
         user.spotify_user_token = token.refresh_token
-        spotify.token = user.spotify_user_token
-
-        with spotify.token_as(token):
-            res = spotify.current_user().json()
-            user_profile = json.loads(res)
-            user.spotify_user_id = user_profile["id"]
         db.session.add(user)
         db.session.commit()
 
-        session["user"] = state
-        users[state] = token
+        spotify.token = token
+        res = spotify.current_user().json()
+        user_profile = json.loads(res)
+        user.spotify_user_id = user_profile["id"]
+        db.session.add(user)
+        db.session.commit()
 
         return redirect("/user/home")
 
@@ -249,6 +249,7 @@ def login():
 
         if user:
             session_login(user)
+
             return redirect("/user/home")
         form.username.errors.append("Invalid username/password")
 
@@ -496,7 +497,6 @@ def show_band_details(band_id):
     - Get upcoming shows for band from Bandsintown using band_name
     - Display data
     """
-
     band = Band.query.filter_by(spotify_artist_id=band_id).first()
 
     if band is None:
@@ -506,84 +506,87 @@ def show_band_details(band_id):
         #   - Get band
         #   - Set band_image variable
         res = spotify.artist(band_id)
-        json_res = res.json()
-        sp_band = json.loads(json_res)
+    else:
+        res = spotify.artist(band.spotify_artist_id)
 
-        band_name = sp_band["name"]
+    json_res = res.json()
+    sp_band = json.loads(json_res)
 
-        try:
-            band_image = sp_band["images"][0]["url"]
-        except IndexError:
-            band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
-        # Spotify End
-        #################################
+    band_name = sp_band["name"]
 
-        ###############################
-        # Setlist.fm search band
-        url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+    try:
+        band_image = sp_band["images"][0]["url"]
+    except IndexError:
+        band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
+    # Spotify End
+    #################################
+
+    ###############################
+    # Setlist.fm search band
+    url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+    res = requests.get(
+        url,
+        headers={
+            "Accept": "application/json",
+            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+        },
+        params=[("artistName", band_name)],
+    ).json()
+
+    fm_band = {}
+
+    try:
+        for band in res["artist"]:
+            if band["name"].lower() == band_name.lower():
+                fm_band = band
+    except KeyError:
+        fm_band = None
+    # Setlist.fm search band end
+    ##############################
+
+    ##############################
+    # Setlist.fm setlists search
+    if fm_band is not None:
+        url = (
+            os.environ.get("SETLIST_FM_BASE_URL")
+            + f"/artist/{fm_band['mbid']}/setlists"
+        )
+
         res = requests.get(
             url,
             headers={
                 "Accept": "application/json",
                 "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
             },
-            params=[("artistName", band_name)],
         ).json()
 
-        fm_band = {}
+        setlists = res["setlist"]
+    else:
+        setlists = None
+    # Setlist.fm setlists search end
+    ##############################
 
-        try:
-            for band in res["artist"]:
-                if band["name"].lower() == band_name.lower():
-                    fm_band = band
-        except KeyError:
-            fm_band = None
-        # Setlist.fm search band end
-        ##############################
+    ################################
+    # Bandsintown Upcoming Events Search
+    bit_search_name = Band.bit_prep_band_name(band_name)
 
-        ##############################
-        # Setlist.fm setlists search
-        if fm_band is not None:
-            url = (
-                os.environ.get("SETLIST_FM_BASE_URL")
-                + f"/artist/{fm_band['mbid']}/setlists"
-            )
+    url = (
+        os.environ.get("BANDSINTOWN_BASE_URL")
+        + "/artists/"
+        + bit_search_name
+        + "/events/"
+    )
+    upcoming_shows = requests.get(
+        url,
+        headers={"accept": "application/json"},
+        params=[("app_id", os.environ.get("BIT_APP_ID"))],
+    ).json()
 
-            res = requests.get(
-                url,
-                headers={
-                    "Accept": "application/json",
-                    "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-                },
-            ).json()
+    if type(upcoming_shows) != list:
+        upcoming_shows = None
 
-            setlists = res["setlist"]
-        else:
-            setlists = None
-        # Setlist.fm setlists search end
-        ##############################
-
-        ################################
-        # Bandsintown Upcoming Events Search
-        bit_search_name = Band.bit_prep_band_name(band_name)
-
-        url = (
-            os.environ.get("BANDSINTOWN_BASE_URL")
-            + "/artists/"
-            + bit_search_name
-            + "/events/"
-        )
-        upcoming_shows = requests.get(
-            url,
-            headers={"accept": "application/json"},
-            params=[("app_id", os.environ.get("BIT_APP_ID"))],
-        ).json()
-
-        if type(upcoming_shows) != list:
-            upcoming_shows = None
-
-        # Bandsintown Upcoming Events Search End
-        ###################################
+    # Bandsintown Upcoming Events Search End
+    ###################################
 
     return render_template(
         "/band/band-detail.html",
@@ -607,6 +610,7 @@ def search_results():
     OR
     - Display search form
     """
+    spotify.token = auths["APP_TOKEN"]
     if request.args.get("search"):
         search = request.args.get("search")
         res = spotify.search("artist: " + search, types=["artist"])
@@ -634,6 +638,9 @@ def show_setlist(band_id, setlist_id):
     - Arrange data for display
     - Display page with data
     """
+    token = cred.refresh_user_token(g.user.spotify_user_token)
+    spotify.token = token
+
     res = spotify.artist(band_id).json()
     sp_band = json.loads(res)
 
@@ -646,23 +653,49 @@ def show_setlist(band_id, setlist_id):
         },
     ).json()
 
-    playlist = {}
-
     setlist = res["sets"]["set"]
 
-    playlist["details"] = {}
+    songs = []
 
     for set in setlist:
         for song in set["song"]:
-            name = song["name"]
-            playlist[name] = {"name": name}
+            try:
+                cover = song["cover"]
+            except KeyError:
+                cover = None
+            if cover is None:
+                songs.append(song["name"])
+            else:
+                songs.append(song["name"] + " [Cover - " + cover["name"] + "]")
 
-    playlist["details"]["length"] = len(playlist) - 1
-    playlist["details"]["venue_name"] = res["venue"]["name"]
-    playlist["details"]["venue_loc"] = (
-        res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
+    play_name = sp_band["name"] + " @ " + res["venue"]["name"]
+    venue_loc = res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
+    try:
+        tour_name = res["tour"]["name"]
+    except KeyError:
+        tour_name = "N/A"
+
+    playlist = Playlist(
+        spotify_playlist_id=None,
+        setlistfm_setlist_id=setlist_id,
+        name=play_name,
+        description=(
+            play_name
+            + " in "
+            + venue_loc
+            + " on "
+            + res["eventDate"]
+            + ". Tour - "
+            + tour_name
+        ),
+        tour_name=tour_name,
+        venue_name=res["venue"]["name"],
+        event_date=res["eventDate"],
+        venue_loc=venue_loc,
+        length=len(songs),
+        band_id=sp_band["id"],
     )
-    playlist["details"]["event_date"] = res["eventDate"]
+    playlist.add_songs(songs)
 
     return render_template(
         "/playlist/playlist.html",
@@ -679,26 +712,40 @@ def create_playlist(band_id, setlist_id):
     POST ROUTE:
     -
     """
-    user = session.get("user", None)
-    token = users.get(user, None)
-
-    # if user is None or token is None:
-    #     session.pop("user", None)
-    #     return abort(403)
+    token = cred.refresh_user_token(g.user.spotify_user_token)
+    spotify.token = token
 
     u = User.query.get_or_404(session[CURR_USER_KEY])
 
     band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
+    playlist_db = Playlist.query.filter_by(setlistfm_setlist_id=setlist_id).first()
+    playlist_call = None
+    setlist = None
+    sp_band = None
+    not_included = []
 
     if band_db is None:
         res = spotify.artist(band_id).json()
         sp_band = json.loads(res)
 
-        setlist_fm_artist_id = res["artist"]["mbid"]
+        if playlist_db is None:
+            url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
+            playlist_call = requests.get(
+                url,
+                headers={
+                    "Accept": "application/json",
+                    "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+                },
+            ).json()
+            setlist_fm_artist_id = playlist_call["artist"]["mbid"]
+        else:
+            setlist_fm_artist_id = playlist_db.band.setlist_artist_id
+
         try:
             band_image = sp_band["images"][0]["url"]
         except IndexError:
             band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
+
         band_db = Band(
             spotify_artist_id=band_id,
             setlistfm_artist_id=setlist_fm_artist_id,
@@ -708,109 +755,124 @@ def create_playlist(band_id, setlist_id):
         db.session.add(band_db)
         db.session.commit()
 
-        playlist_db = Playlist.query.filter_by(
-            band_id=band_id, setlistfm_setlist_id=setlist_id
-        ).first()
+    if playlist_db is None:
+        url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
+        playlist_call = requests.get(
+            url,
+            headers={
+                "Accept": "application/json",
+                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+            },
+        ).json()
 
-        if playlist_db is None:
-            url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
-            res = requests.get(
-                url,
-                headers={
-                    "Accept": "application/json",
-                    "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-                },
-            ).json()
+        setlist = playlist_call["sets"]["set"]
 
-            setlist = res["sets"]["set"]
+        venue_name = playlist_call["venue"]["name"]
+        play_name = band_db.name + " @ " + venue_name
+        event_date = playlist_call["eventDate"]
+        try:
+            tour_name = playlist_call["tour"]["name"]
+        except KeyError:
+            tour_name = "N/A"
+        venue_loc = (
+            playlist_call["venue"]["city"]["name"]
+            + ", "
+            + playlist_call["venue"]["city"]["state"]
+        )
+        play_desc = (
+            play_name
+            + " in "
+            + venue_loc
+            + " on "
+            + event_date
+            + ". Tour - "
+            + tour_name
+        )
+        length = 0
+        band_id = band_db.id
 
-            venue_name = res["venue"]["name"]
-            play_name = band_db.name + " @ " + venue_name
-            event_date = res["eventDate"]
-            tour_name = res["tour"]["name"]
-            venue_loc = (
-                res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
-            )
-            play_desc = (
-                play_name
-                + " in "
-                + venue_loc
-                + " on "
-                + event_date
-                + ". Tour - "
-                + tour_name
-            )
-            length = 0
-            band_id = band_db.id
+        playlist_db = Playlist(
+            spotify_playlist_id="None Yet",
+            setlistfm_setlist_id=setlist_id,
+            name=play_name,
+            description=play_desc,
+            tour_name=tour_name,
+            venue_name=venue_name,
+            event_date=event_date,
+            venue_loc=venue_loc,
+            length=length,
+            band_id=band_db.id,
+        )
+        db.session.add(playlist_db)
+        db.session.commit()
 
-            playlist_db = Playlist(
-                spotify_playlist_id="None Yet",
-                setlistfm_setlist_id=setlist_id,
-                name=play_name,
-                description=play_desc,
-                tour_name=tour_name,
-                venue_name=venue_name,
-                event_date=event_date,
-                venue_loc=venue_loc,
-                length=length,
-                band_id=band_db.id,
-            )
+        playlist = []
+        uris = []
+
+        for set in setlist:
+            for song in set["song"]:
+                res = spotify.search(
+                    query=("track: " + song["name"] + " artist: " + band_db.name),
+                    types=["track"],
+                    limit=1,
+                )
+                json_res = res[0].json()
+                song_res = json.loads(json_res)
+
+                try:
+                    spotify_song_id = song_res["items"][0]["id"]
+                    name = song_res["items"][0]["name"]
+                    duration = song_res["items"][0]["duration_ms"] / 1000
+
+                    song_db = Song.query.filter_by(
+                        spotify_song_id=spotify_song_id, name=name, duration=duration
+                    ).first()
+
+                    if song_db is None:
+                        song_db = Song(
+                            spotify_song_id=spotify_song_id,
+                            name=name,
+                            duration=duration,
+                            band_id=band_db.id,
+                        )
+                        db.session.add(song_db)
+                        db.session.commit()
+                        uris.append("spotify:track:" + song_db.spotify_song_id)
+
+                    new_song_relate = Playlist_Song(
+                        playlist_id=playlist_db.id, song_id=song_db.id
+                    )
+                    db.session.add(new_song_relate)
+                    db.session.commit()
+
+                    playlist.append(song_db)
+                except IndexError:
+                    not_included.append(song["name"])
+
+            playlist_db.length = len(playlist)
             db.session.add(playlist_db)
             db.session.commit()
 
-    new_relate_playlist = User_Playlist.query.filter_by(
-        user_id=u.id, playlist_id=playlist_db.id
-    ).first()
+    new_relate_playlist = User_Playlist(user_id=u.id, playlist_id=playlist_db.id)
+    db.session.add(new_relate_playlist)
+    db.session.commit()
 
-    if new_relate_playlist is None:
-        new_relate_playlist = User_Playlist(user_id=u.id, playlist_id=playlist_db.id)
+    json_res = spotify.playlist_create(
+        user_id=u.spotify_user_id,
+        name=playlist_db.name,
+        public=False,
+        description=playlist_db.description,
+    ).json()
+    res = json.loads(json_res)
 
-    playlist = {}
-    playlist["details"] = {}
-
-    # TODO: Get spotify song id's for each song added to playlist
-    # * Make Song instances for each song
-    # * Add each instance to the relationship with the playlist
-    # * Create a new Spotify playlist for user
-    # * Add songs to the Spotify playlist with the song spotify id's
-    # * Return redirect to the success/fail page with the Spotify playlist url as a variable
-
-    for set in setlist:
-        for song in set["song"]:
-            res = spotify.search(
-                query=("track:" + song["name"] + "%20artist:" + sp_band["name"]),
-                types="track",
-                limit=1,
-            ).json()
-            name = song["name"]
-            playlist[name] = {"name": name}
-
-    playlist["details"]["length"] = len(playlist) - 1
-    playlist_db.length = len(playlist) - 1
+    playlist_db.spotify_playlist_id = res["id"]
+    playlist_db.spotify_playlist_url = res["external_urls"]["spotify"]
     db.session.add(playlist_db)
     db.session.commit()
-    playlist["details"]["venue_name"] = playlist_db.venue_name
-    playlist["details"]["venue_loc"] = playlist_db.event_date
-    playlist["details"]["event_date"] = playlist_db.event_date
 
-    if token.is_expiring:
-        token = cred.refresh(token)
-        users[user] = token
+    spotify.playlist_add(playlist_id=playlist_db.spotify_playlist_id, uris=uris)
 
-    with spotify.token_as(token):
-        spotify.playlist_create(u.spotify_user_id)
-
-    # TODO: THIRD
-    # * Post route for adding playlist to user spotify
-    # create a playlist and save it to the database and the user's spotify here
-    # return redirect to either 'playlist/success' or 'playlist/failure'
-    return render_template(
-        "/playlist/playlist.html",
-        playlist=playlist,
-        band=sp_band,
-        duration=True,
-        saved=True,
-    )
+    return render_template("/playlist/result.html", playlist=playlist_db)
 
 
 @app.route("/playlist/created/<playlist_id>")
@@ -836,10 +898,11 @@ def show_hype_setlist(band_id):
     - Arrange data
     - Return band, playlist dict, page config variables (duration, saved)
     """
-
     band = Band.query.filter_by(spotify_artist_id=band_id).first()
 
     if band is None:
+        token = cred.refresh_user_token(g.user.spotify_user_token)
+        spotify.token = token
         res = spotify.artist(band_id)
         json_res = res.json()
         band = json.loads(json_res)

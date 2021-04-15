@@ -160,7 +160,9 @@ class Playlist(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    spotify_playlist_id = db.Column(db.Text, default=None, nullable=False)
+    spotify_playlist_id = db.Column(db.Text, default="pending", nullable=False)
+
+    spotify_playlist_url = db.Column(db.Text, default="pending", nullable=False)
 
     setlistfm_setlist_id = db.Column(db.Text, nullable=False)
 
@@ -177,6 +179,8 @@ class Playlist(db.Model):
     venue_loc = db.Column(db.Text, default=None)
 
     length = db.Column(db.Integer, nullable=False)
+
+    duration = db.Column(db.Text, default=None)
 
     band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
 
@@ -205,11 +209,18 @@ class Playlist(db.Model):
 
         return duration
 
+    def add_songs(self, songs):
+        """
+        Add a list of songs to the playlist object (not saved to the db)
+        """
+        self.songz = songs
+        return None
+
     def __repr__(self):
         """
         A more readable representation of the instance
         """
-        return f"<Playlist id={self.id} name={self.name} description={self.description} length={self.length} user_id={self.user_id} band_id={self.band_id}>"
+        return f"<Playlist id={self.id} name={self.name} description={self.description} length={self.length} band_id={self.band_id}>"
 
 
 class Playlist_Song(db.Model):
@@ -289,11 +300,7 @@ class Song(db.Model):
 
     name = db.Column(db.Text, nullable=False)
 
-    album_name = db.Column(db.Text, nullable=False)
-
     duration = db.Column(db.Integer, nullable=False)
-
-    spotify_url = db.Column(db.Text, nullable=False)
 
     band_id = db.Column(db.Integer, db.ForeignKey("bands.id"))
 
@@ -301,7 +308,7 @@ class Song(db.Model):
         """
         A more readable representation of the instance
         """
-        return f"<Song id={self.id} name={self.name} length={self.length} band_id={self.band_id}>"
+        return f"<Song id={self.id} name={self.name} duration={self.duration} band_id={self.band_id}>"
 
 
 def connect_db(app):

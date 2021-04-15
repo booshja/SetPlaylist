@@ -1,18 +1,15 @@
 {% extends 'base.html' %} {% block title %}{{result}} - SetPlaylist{% endblock
 title %} {% block content %}
 <section id="result">
-    {% if result=="Success!" %}
     <div class="result container playlist-success">
         <div class="result__feedback container">
             <h2 class="result__feedback__headline">Playlist Created!</h2>
-            <a href="#" class="result__feedback__link">See on Spotify</a>
+            <a
+                href="{{playlist.spotify_playlist_url}}"
+                class="result__feedback__link"
+                >See on Spotify</a
+            >
             <a href="/home" class="result__feedback__link">Back Home</a>
-            {% else %}
-            <div class="result container playlist-fail">
-            <div class="result__feedback container">
-            <h2 class="result__feedback__headline">That didn't work</h2>
-            <a href="/home" class="result__feedback__link">Go Back Home</a>
-            {% endif %}
         </div>
     </div>
 </section>
