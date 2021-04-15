@@ -15,7 +15,9 @@ endblock %} {% block content %}
         <a href="{{band['external_urls']['spotify']}}" class="band-links__link"
             >{{band['name']}} on Spotify</a
         >
-        <a href="#" class="band-links__link">Add to favorites</a>
+        <form action="/favorite/{{band['id']}}" method="post">
+            <button type="submit">Add/Remove from Favorites</button>
+        </form>
     </div>
 </section>
 <section id="band-setlists">

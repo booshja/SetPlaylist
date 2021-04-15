@@ -63,13 +63,20 @@ endblock title %} {% block content %}
                         {% for band in g.user.favorites %}
                         <li>
                             <a
-                                href="#"
+                                href="/band/{{band.spotify_artist_id}}"
                                 class="user-home__left__bands__band__name"
                                 >{{band.name}}</a
                             >
-                            <small
-                                ><a href="#"><i class="far fa-trash-alt"></i></a
-                            ></small>
+                            <small>
+                                <form
+                                    action="/favorite/{{band.spotify_artist_id}}"
+                                    method="POST"
+                                >
+                                    <button type="submit">
+                                        <i class="far fa-trash-alt"></i>
+                                    </button>
+                                </form>
+                            </small>
                         </li>
                         {% endfor %}
                     </ul>

@@ -489,6 +489,7 @@ def edit_user(user_id):
 @app.route("/band/<band_id>")
 def show_band_details(band_id):
     """
+    GET ROUTE:
     - Check if band already in database
     - Get band from Spotify with band_id
     - Sets band_image and band_name
@@ -584,7 +585,6 @@ def show_band_details(band_id):
 
     if type(upcoming_shows) != list:
         upcoming_shows = None
-
     # Bandsintown Upcoming Events Search End
     ###################################
 
@@ -595,6 +595,60 @@ def show_band_details(band_id):
         band_image=band_image,
         setlists=setlists,
     )
+
+
+@app.route("/favorite/<band_id>", methods=["POST"])
+def add_to_favorites(band_id):
+    """
+    POST ROUTE:
+    - Add or remove a band from the user's favorites
+    """
+    band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
+
+    if band_db in g.user.favorites:
+        fav = Favorite.query.filter_by(band_id=band_db.id, user_id=g.user.id).one()
+        db.session.delete(fav)
+        db.session.commit()
+    else:
+        if band_db is None:
+            token = cred.refresh_user_token(g.user.spotify_user_token)
+            spotify.token = token
+
+            res = spotify.artist(band_id).json()
+            sp_band = json.loads(res)
+
+            try:
+                band_image = sp_band["images"][0]["url"]
+            except IndexError:
+                band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
+
+            url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+            json_res = requests.get(
+                url,
+                headers={
+                    "Accept": "application/json",
+                    "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+                },
+                params=[("artistName", sp_band["name"])],
+            ).json()
+            res = json.loads(json_res)
+
+            for band in res["artist"]:
+                if band["name"].lower() == sp_band["name"].lower():
+                    fm_band = band
+
+            band_db = Band(
+                spotify_artist_id=band_id,
+                setlistfm_artist_id=fm_band["mbid"],
+                name=sp_band["name"],
+                photo=band_image,
+            )
+
+        new_fav = Favorite(user_id=g.user.id, band_id=band_db.id)
+        db.session.add(new_fav)
+        db.session.commit()
+
+    return redirect("/user/home")
 
 
 ######################
