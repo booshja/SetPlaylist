@@ -1192,7 +1192,7 @@ def show_success_page():
 @app.errorhandler(403)
 def forbidden(e):
     """
-    Unauthorized access error
+    Unauthorized access error view
     """
     return render_template("/errors/403.html"), 403
 
@@ -1200,7 +1200,7 @@ def forbidden(e):
 @app.errorhandler(404)
 def page_not_found(e):
     """
-    Page not found error
+    Page not found error view
     """
     return render_template("/errors/404.html"), 404
 
@@ -1208,6 +1208,6 @@ def page_not_found(e):
 @app.errorhandler(500)
 def server_error(e):
     """
-    Internal Error
+    Internal Error view
     """
     return render_template("/errors/500.html"), 500
