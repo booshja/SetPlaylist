@@ -28,7 +28,9 @@ endblock title %} {% block content %}
                     g.user.playlists %}
                     <article>
                         <div class="user-home__playlist">
-                            <a href="#" class="user-home__playlist__name"
+                            <a
+                                href="/playlist/show/{{playlist.band.spotify_artist_id}}/{{playlist.setlistfm_setlist_id}}"
+                                class="user-home__playlist__name"
                                 >{{playlist.name}}</a
                             >
                             <h5 class="user-home__playlist__band">
@@ -93,8 +95,7 @@ endblock title %} {% block content %}
             <div class="user-home__right__account container">
                 <h3 class="user-home__right__account__headline" h3>Account</h3>
                 <div class="user-home__right__account__links">
-                    <a href="#">Edit Account Details</a>
-                    <a href="#">Manage Spotify Link</a>
+                    <a href="/user/edit/{{g.user.id}}">Edit Account Details</a>
                 </div>
             </div>
             <div class="user-home__right__recents container">
@@ -102,17 +103,21 @@ endblock title %} {% block content %}
                     Recently Created Playlists
                 </h4>
                 <div class="user-home__right__recents__links">
+                    {% if recent_playlists %}
                     <ul>
                         {% for playlist in recent_playlists %}
                         <li>
                             <a
-                                href="#"
+                                href="/playlist/show/{{playlist.band.spotify_artist_id}}/{{playlist.setlistfm_setlist_id}}"
                                 class="user-home__right__recents__links__link"
                                 >{{playlist.name}}</a
                             >
                         </li>
                         {% endfor %}
                     </ul>
+                    {% else %}
+                    <p>None created, be the first!</p>
+                    {% endif %}
                 </div>
             </div>
         </div>

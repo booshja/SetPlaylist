@@ -137,7 +137,7 @@ class User(db.Model):
         return False
 
     @classmethod
-    def hash_password(password):
+    def hash_password(cls, password):
         """
         - Hash the given password
         - Return the hashed password

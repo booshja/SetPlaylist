@@ -47,7 +47,9 @@ endblock title %} {% block content %}
                 class="right-col__links__link"
                 >Save Playlist</a
             >
-            <a href="#" class="right-col__links__link"
+            <a
+                href="{{band['external_urls']['spotify']}}"
+                class="right-col__links__link"
                 >{{band['name']}} on Spotify</a
             >
         </div>

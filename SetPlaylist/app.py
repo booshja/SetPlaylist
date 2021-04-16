@@ -5,7 +5,7 @@ import requests
 import tekore
 import urllib.parse
 from dotenv import load_dotenv
-from flask import Flask, g, redirect, render_template, request, session, jsonify, abort
+from flask import Flask, g, redirect, render_template, request, session, abort
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import (
     ForgotPassAnswer,
@@ -26,7 +26,6 @@ from models import (
     connect_db,
     db,
 )
-from math import floor
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
@@ -84,7 +83,7 @@ def session_login(user):
     return None
 
 
-def session_logout(user):
+def session_logout():
     """
     Logout user from Flask session
     """
@@ -206,6 +205,7 @@ def spotify_callback():
     """
     GET ROUTE:
     - Spotify callback route
+    - Save user refreshable auth token
     """
     if request.args.get("code"):
         user = User.query.get_or_404(session[CURR_USER_KEY])
@@ -266,8 +266,7 @@ def logout():
     POST ROUTE:
     - Handle logout of user
     """
-    user = session[CURR_USER_KEY]
-    session_logout(user)
+    session_logout()
     return redirect("/")
 
 
@@ -333,7 +332,7 @@ def forgot_password_check_secret_question(user_id):
 
     if form.validate_on_submit():
         if User.authenticate_secret_answer(user.username, form.secret_answer.data):
-            return redirect("/forgot/<user_id>/new")
+            return redirect(f"/forgot/{user.id}/new")
         else:
             form.secret_answer.errors.append("Invalid secret answer")
 
@@ -370,8 +369,8 @@ def forgot_password_new_password(user_id):
             hashed_pwd = User.hash_password(form.new_password.data)
             user.password = hashed_pwd
 
-            db.add(user)
-            db.commit()
+            db.session.add(user)
+            db.session.commit()
 
             session.pop("password_reset")
 
@@ -417,8 +416,8 @@ def homepage():
     """
     if not g.user:
         return redirect("/")
-    else:
-        recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
+
+    recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
 
     return render_template("/user/home.html", recent_playlists=recent_playlists)
 
@@ -455,13 +454,29 @@ def edit_user(user_id):
         user = User.query.get_or_404(user_id)
 
         if User.authenticate(user.username, current_password):
+            if form.secret_question.data:
+                if not form.secret_answer.data:
+                    form.secret_answer.errors.append(
+                        "Must change secret question and password at the same time"
+                    )
+                    return render_template(
+                        "/user/edit.html", form=form, title="Edit User", q_display=""
+                    )
+            if form.secret_answer.data:
+                if not form.secret_question.data:
+                    form.secret_question.errors.append(
+                        "Must change secret question and answer at the same time"
+                    )
+                    return render_template(
+                        "/user/edit.html", form=form, title="Edit User", q_display=""
+                    )
             user.username = form.username.data or user.username
             user.email = form.email.data or user.email
             user.secret_question = form.secret_question.data or user.secret_question
             user.secret_answer = form.secret_answer.data or user.secret_answer
 
             new_password = form.new_password.data or None
-            retype_password = form.retype_password.data or None
+            retype_password = form.retype_new_password.data or None
             if (
                 new_password is not None
                 and retype_password is not None
@@ -470,15 +485,15 @@ def edit_user(user_id):
                 user.password = User.hash_password(new_password)
 
             try:
-                db.add(user)
-                db.commit()
+                db.session.add(user)
+                db.session.commit()
             except IntegrityError:
                 form.username.errors.append("Username unavailable")
                 return redirect(f"/user/{user_id}/edit")
 
             return redirect("/user/home")
         else:
-            form.password.errors.append("Incorrect Password")
+            form.current_password.errors.append("Incorrect Password")
 
     return render_template(
         "/user/edit.html", form=form, title="Edit User", q_display=""
@@ -500,7 +515,6 @@ def show_band_details(band_id):
     - Get band from Setlist.fm using band_name
     - Get setlists for band from Setlist.fm using Setlist.fm mbid
     - Get upcoming shows for band from Bandsintown using band_name
-    - Display data
     """
     band = Band.query.filter_by(spotify_artist_id=band_id).first()
 
@@ -535,7 +549,7 @@ def show_band_details(band_id):
             "Accept": "application/json",
             "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
         },
-        params=[("artistName", band_name)],
+        params=[("artistName", band_name), ("sort", "relevance")],
     ).json()
 
     fm_band = {}
@@ -607,6 +621,9 @@ def add_to_favorites(band_id):
     POST ROUTE:
     - Add or remove a band from the user's favorites
     """
+    if not g.user:
+        abort(403)
+
     band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
 
     if band_db in g.user.favorites:
@@ -696,6 +713,9 @@ def show_setlist(band_id, setlist_id):
     - Arrange data for display
     - Display page with data
     """
+    if not g.user:
+        return redirect("/")
+
     token = cred.refresh_user_token(g.user.spotify_user_token)
     spotify.token = token
 
@@ -770,6 +790,9 @@ def create_playlist(band_id, setlist_id):
     POST ROUTE:
     -
     """
+    if not g.user:
+        abort(403)
+
     token = cred.refresh_user_token(g.user.spotify_user_token)
     spotify.token = token
 
@@ -929,6 +952,8 @@ def create_hype_playlist(band_id):
     POST ROUTE:
     -
     """
+    if not g.user:
+        abort(403)
     token = cred.refresh_user_token(g.user.spotify_user_token)
     spotify.token = token
 
@@ -1067,6 +1092,9 @@ def show_hype_setlist(band_id):
     - Arrange data
     - Return band, playlist dict, page config variables (duration, saved)
     """
+    if not g.user:
+        return redirect("/")
+
     token = cred.refresh_user_token(g.user.spotify_user_token)
     spotify.token = token
 
@@ -1120,7 +1148,8 @@ def show_success_page():
     """
     Todo - shows the success page after playlist saved to spotify
     """
-    # spotify_link (link to open playlist via spotify)
+    if not g.user:
+        abort(403)
     return render_template("/playlist/result.html", result="Success!")
 
 
