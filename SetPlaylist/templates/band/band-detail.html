@@ -9,9 +9,11 @@ endblock %} {% block content %}
 {% if g.user %}
 <section id="band-links">
     <div class="band-links container">
-        <a href="/playlist/hype/{{band['id']}}" class="band-links__link"
-            >Create Hype Up Playlist</a
-        >
+        <form action="/playlist/hype-create/{{band['id']}}" method="post">
+            <button type="submit" class="band-links__link">
+                Create Hype Up Playlist
+            </button>
+        </form>
         <a href="{{band['external_urls']['spotify']}}" class="band-links__link"
             >{{band['name']}} on Spotify</a
         >

@@ -760,7 +760,7 @@ def show_setlist(band_id, setlist_id):
     )
 
 
-@app.route("/playlist/create/<band_id>/<setlist_id>")
+@app.route("/playlist/create/<band_id>/<setlist_id>", methods=["POST"])
 def create_playlist(band_id, setlist_id):
     """
     POST ROUTE:
@@ -768,8 +768,6 @@ def create_playlist(band_id, setlist_id):
     """
     token = cred.refresh_user_token(g.user.spotify_user_token)
     spotify.token = token
-
-    u = User.query.get_or_404(session[CURR_USER_KEY])
 
     band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
     playlist_db = Playlist.query.filter_by(setlistfm_setlist_id=setlist_id).first()
@@ -810,14 +808,6 @@ def create_playlist(band_id, setlist_id):
         db.session.commit()
 
     if playlist_db is None:
-        url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
-        playlist_call = requests.get(
-            url,
-            headers={
-                "Accept": "application/json",
-                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-            },
-        ).json()
 
         setlist = playlist_call["sets"]["set"]
 
@@ -907,12 +897,12 @@ def create_playlist(band_id, setlist_id):
             db.session.add(playlist_db)
             db.session.commit()
 
-    new_relate_playlist = User_Playlist(user_id=u.id, playlist_id=playlist_db.id)
+    new_relate_playlist = User_Playlist(user_id=g.user.id, playlist_id=playlist_db.id)
     db.session.add(new_relate_playlist)
     db.session.commit()
 
     json_res = spotify.playlist_create(
-        user_id=u.spotify_user_id,
+        user_id=g.user.spotify_user_id,
         name=playlist_db.name,
         public=False,
         description=playlist_db.description,
@@ -929,19 +919,140 @@ def create_playlist(band_id, setlist_id):
     return render_template("/playlist/result.html", playlist=playlist_db)
 
 
-@app.route("/playlist/created/<playlist_id>")
-def show_created_playlist(playlist_id):
+@app.route("/playlist/hype-create/<band_id>", methods=["POST"])
+def create_hype_playlist(band_id):
     """
-    Todo - Shows the setlist that was created
+    POST ROUTE:
+    -
     """
-    # playlist (Playlist object saved to db), saved, not_included (songs not in the playlist that were on the setlist)
-    return render_template(
-        "/playlist/playlist.html",
-        saved=True,
-        duration=True,
-        # playlist=playlist,
-        # not_included=not_included,
-    )
+    token = cred.refresh_user_token(g.user.spotify_user_token)
+    spotify.token = token
+
+    band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
+    setlist = None
+    sp_band = None
+    uris = []
+
+    if band_db is None:
+        json_res = spotify.artist(band_id).json()
+        sp_band = json.loads(json_res)
+
+        try:
+            band_image = sp_band["images"][0]["url"]
+        except IndexError:
+            band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
+
+        url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
+        res = requests.get(
+            url,
+            headers={
+                "Accept": "application/json",
+                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+            },
+            params=[("artistName", sp_band["name"])],
+        ).json()
+
+        for band in res["artist"]:
+            if band["name"].lower() == sp_band["name"].lower():
+                fm_band = band
+
+        band_db = Band(
+            spotify_artist_id=band_id,
+            setlistfm_artist_id=fm_band["mbid"],
+            name=sp_band["name"],
+            photo=band_image,
+        )
+
+        db.session.add(band_db)
+        db.session.commit()
+
+    playlist_db = Playlist.query.filter_by(
+        setlistfm_setlist_id="Hype", band_id=band_db.id
+    ).first()
+
+    if playlist_db is None:
+
+        play_name = band_db.name + " Hype-Up"
+
+        playlist_db = Playlist(
+            spotify_playlist_id="None Yet",
+            setlistfm_setlist_id="Hype",
+            name=play_name,
+            description=play_name,
+            tour_name="N/A",
+            venue_name="Wherever you'd like!",
+            event_date="Whenever you'd like!",
+            venue_loc="Your speakers",
+            length=0,
+            band_id=band_db.id,
+        )
+
+        db.session.add(playlist_db)
+        db.session.commit()
+
+        res = spotify.artist_top_tracks(band_id, "US")
+
+        order = [1, 3, 5, 7, 9, 8, 6, 4, 2, 0]
+        setlist = []
+        songs = []
+
+        playlist = []
+
+        for song in res:
+            setlist.append(song)
+
+        for i in order:
+            song = setlist[i]
+            songs.append(song)
+
+        for song in songs:
+            song_db = Song.query.filter_by(
+                spotify_song_id=song.id, name=song.name
+            ).first()
+
+            if song_db is None:
+                song_db = Song(
+                    spotify_song_id=song.id,
+                    name=song.name,
+                    duration=song.duration_ms,
+                    band_id=band_db.id,
+                )
+                db.session.add(song_db)
+                db.session.commit()
+                uris.append("spotify:track:" + song_db.spotify_song_id)
+
+            new_song_relate = Playlist_Song(
+                playlist_id=playlist_db.id, song_id=song_db.id
+            )
+            db.session.add(new_song_relate)
+            db.session.commit()
+
+            playlist.append(song_db)
+
+        playlist_db.length = len(playlist)
+        db.session.add(playlist_db)
+        db.session.commit()
+
+    new_relate_playlist = User_Playlist(user_id=g.user.id, playlist_id=playlist_db.id)
+    db.session.add(new_relate_playlist)
+    db.session.commit()
+
+    json_res = spotify.playlist_create(
+        user_id=g.user.spotify_user_id,
+        name=playlist_db.name,
+        public=False,
+        description=playlist_db.description,
+    ).json()
+    res = json.loads(json_res)
+
+    playlist_db.spotify_playlist_id = res["id"]
+    playlist_db.spotify_playlist_url = res["external_urls"]["spotify"]
+    db.session.add(playlist_db)
+    db.session.commit()
+
+    spotify.playlist_add(playlist_id=playlist_db.spotify_playlist_id, uris=uris)
+
+    return render_template("/playlist/result.html", playlist=playlist_db)
 
 
 @app.route("/playlist/hype/<band_id>")
@@ -952,50 +1063,51 @@ def show_hype_setlist(band_id):
     - Arrange data
     - Return band, playlist dict, page config variables (duration, saved)
     """
-    band = Band.query.filter_by(spotify_artist_id=band_id).first()
+    token = cred.refresh_user_token(g.user.spotify_user_token)
+    spotify.token = token
 
-    if band is None:
-        token = cred.refresh_user_token(g.user.spotify_user_token)
-        spotify.token = token
-        res = spotify.artist(band_id)
-        json_res = res.json()
-        band = json.loads(json_res)
+    json_res = spotify.artist(band_id).json()
+    sp_band = json.loads(json_res)
 
     res = spotify.artist_top_tracks(band_id, "US")
 
-    hype = {}
-    hype["details"] = {}
     order = [1, 3, 5, 7, 9, 8, 6, 4, 2, 0]
     setlist = []
+    songs = []
 
     for song in res:
-        spotify_song_id = song.id
         name = song.name
-        duration = floor(int(song.duration_ms) / 1000)
-
-        setlist.append(
-            {
-                "spotify_song_id": spotify_song_id,
-                "name": name,
-                "duration": duration,
-            }
-        )
+        setlist.append(name)
 
     for i in order:
         song = setlist[i]
-        song_id = song["spotify_song_id"]
-        hype[song_id] = song
+        songs.append(song)
 
-    duration = Playlist.calc_duration(hype)
+    play_name = sp_band["name"] + " Hype-Up"
+    venue_name = "Wherever you'd like!"
+    venue_loc = "Your speakers"
+    event_date = "Whenever you'd like!"
 
-    hype["details"]["duration"] = duration[0]
-    hype["details"]["length"] = duration[1]
-    hype["details"]["venue_name"] = "Wherever you'd like!"
-    hype["details"]["venue_loc"] = "Your speakers"
-    hype["details"]["event_date"] = "Whenever you'd like!"
+    playlist = Playlist(
+        spotify_playlist_id=None,
+        setlistfm_setlist_id="Hype",
+        name=sp_band["band"],
+        description=play_name,
+        tour_name="N/A",
+        venue_name=venue_name,
+        event_date=event_date,
+        venue_loc=venue_loc,
+        length=len(songs),
+        band_id=sp_band["id"],
+    )
+    playlist.add_songs(songs)
 
     return render_template(
-        "/playlist/playlist.html", playlist=hype, band=band, duration=True, saved=False
+        "/playlist/playlist.html",
+        playlist=playlist,
+        band=sp_band,
+        duration=False,
+        saved=False,
     )
 
 
@@ -1006,14 +1118,6 @@ def show_success_page():
     """
     # spotify_link (link to open playlist via spotify)
     return render_template("/playlist/result.html", result="Success!")
-
-
-@app.route("/playlist/failure")
-def show_failure_page():
-    """
-    Todo - shows the failure page after playlist not saved to spotify
-    """
-    return render_template("/playlist/result.html", result="Uh oh!")
 
 
 #######################
