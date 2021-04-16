@@ -107,11 +107,19 @@ endblock title %} {% block content %}
                     <ul>
                         {% for playlist in recent_playlists %}
                         <li>
+                            {% if playlist.setslistfm_setlist_id == 'Hype' %}
+                            <a
+                                href="/playlist/hype/{{playlist.band.spotify_artist_id}}"
+                                class="user-home__right__recents__links__link"
+                                >{{playlist.name}}</a
+                            >
+                            {% else %}
                             <a
                                 href="/playlist/show/{{playlist.band.spotify_artist_id}}/{{playlist.setlistfm_setlist_id}}"
                                 class="user-home__right__recents__links__link"
                                 >{{playlist.name}}</a
                             >
+                            {% endif %}
                         </li>
                         {% endfor %}
                     </ul>

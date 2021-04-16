@@ -1,5 +1,6 @@
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
+from math import floor
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
@@ -188,33 +189,29 @@ class Playlist(db.Model):
 
     band = db.relationship("Band")
 
-    @classmethod
-    def calc_duration(cls, hype):
-        total_seconds = 0
-        total_songs = 0
-        duration = []
-
-        hype = hype
-
-        for song in hype:
-            if song != "details":
-                total_seconds += hype[song]["duration"]
-                total_songs += 1
-
-        seconds = total_seconds % 60
-        minutes = int((total_seconds - seconds) / 60)
-
-        duration.append(str(minutes) + " min, " + str(seconds) + " sec")
-        duration.append(total_songs)
-
-        return duration
-
     def add_songs(self, songs):
         """
         Add a list of songs to the playlist object (not saved to the db)
         """
         self.songz = songs
         return None
+
+    def format_duration(init_duration):
+        """
+        Takes duration in seconds and returns a string of the duration in hrs/min/sec
+        """
+        hours = None
+        minutes = floor(init_duration / 60)
+        seconds = init_duration - (minutes * 60)
+
+        if minutes > 60:
+            hours = floor(minutes / 60)
+            minutes = minutes - (hours * 60)
+
+        if hours is None:
+            return f"{minutes}min. {seconds}sec."
+        else:
+            return f"{hours}hrs. {minutes}min. {seconds}sec."
 
     def __repr__(self):
         """

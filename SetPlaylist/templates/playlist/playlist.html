@@ -14,7 +14,7 @@ endblock title %} {% block content %}
     <div class="main-col">
         <div class="playlist container">
             <h3 class="playlist__headline">Setlist</h3>
-            {% if playlist %}
+            {% if playlist.length > 0 %}
             <ol class="playlist__list">
                 {% if playlist.songz %} {% for song in playlist.songz %}
                 <li class="playlist__list__song">{{song}}</li>
@@ -42,14 +42,21 @@ endblock title %} {% block content %}
     </div>
     <div class="right-col">
         <div class="right-col__links container">
-            <a
-                href="/playlist/create/{{playlist.band_id}}/{{playlist.setlistfm_setlist_id}}"
-                class="right-col__links__link"
-                >Save Playlist</a
-            >
+            {% if playlist.length == 0 or playlist in g.user.playlists %}
+            {% else %}
+            {% if playlist.setlistfm_setlist_id == "Hype" %}
+            <form action="/playlist/hype-create/{{playlist.band_id}}" method="post">
+            {% else %}
+            <form action="/playlist/create/{{playlist.band_id}}/{{playlist.setlistfm_setlist_id}}" method="post">
+            {% endif %}
+            <button type="submit">Save Playlist</button>
+            </form>
+            {% endif %}
             <a
                 href="{{band['external_urls']['spotify']}}"
                 class="right-col__links__link"
+                target="_blank"
+                rel="noopener noreferrer"
                 >{{band['name']}} on Spotify</a
             >
         </div>

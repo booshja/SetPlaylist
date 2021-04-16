@@ -9,12 +9,14 @@ endblock %} {% block content %}
 {% if g.user %}
 <section id="band-links">
     <div class="band-links container">
-        <form action="/playlist/hype-create/{{band['id']}}" method="post">
-            <button type="submit" class="band-links__link">
-                Create Hype Up Playlist
-            </button>
-        </form>
-        <a href="{{band['external_urls']['spotify']}}" class="band-links__link"
+        <a href="/playlist/hype/{{band['id']}}" class="band-links__link"
+            >See Hype Up Playlist</a
+        >
+        <a
+            href="{{band['external_urls']['spotify']}}"
+            class="band-links__link"
+            target="_blank"
+            rel="noopener noreferrer"
             >{{band['name']}} on Spotify</a
         >
         <form action="/favorite/{{band['id']}}" method="post">

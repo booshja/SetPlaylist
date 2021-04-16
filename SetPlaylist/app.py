@@ -3,7 +3,6 @@ import os
 import json
 import requests
 import tekore
-import urllib.parse
 from dotenv import load_dotenv
 from flask import Flask, g, redirect, render_template, request, session, abort
 from flask_debugtoolbar import DebugToolbarExtension
@@ -15,6 +14,7 @@ from forms import (
     RegisterForm,
     UserEditForm,
 )
+from math import floor
 from models import (
     Band,
     Favorite,
@@ -92,6 +92,10 @@ def session_logout():
 
 @app.context_processor
 def utility_processor():
+    """
+    Creates a dict that contains methods to be used within Jinja templates
+    """
+
     def format_setlist_display(set):
         """
         Returns setlist details arranged in venue name - event date - venue location
@@ -116,11 +120,6 @@ def utility_processor():
     return dict(format_setlist_display=format_setlist_display)
 
 
-##############################
-# User Login/Logout/Register ####################################
-##############################
-
-
 @app.before_request
 def add_to_g():
     """
@@ -130,6 +129,11 @@ def add_to_g():
         g.user = User.query.get(session[CURR_USER_KEY])
     else:
         g.user = None
+
+
+##############################
+# User Login/Logout/Register ####################################
+##############################
 
 
 @app.route("/register", methods=["GET", "POST"])
@@ -146,37 +150,37 @@ def register():
     - If username in user
         - Add username error message and re-present form
     """
-    if not g.user:
-        form = RegisterForm()
-
-        if form.validate_on_submit():
-            # POST ROUTE FOR REGISTRATION FORM
-            try:
-                user = User.register(
-                    username=form.username.data,
-                    password=form.password.data,
-                    email=form.email.data,
-                    secret_question=form.secret_question.data,
-                    secret_answer=form.secret_answer.data,
-                )
-                db.session.commit()
-            except IntegrityError:
-                form.username.errors.append("Username not available")
-                return render_template(
-                    "auth.html", form=form, title="Register", q_display=""
-                )
-
-            session_login(user)
-
-            # Spotify authorization flow
-            auth = tekore.UserAuth(cred, scope)
-            auths[auth.state] = auth
-
-            return redirect(auth.url, 303)
-
-        return render_template("auth.html", form=form, title="Register", q_display="")
-    else:
+    if g.user:
         abort(403)
+
+    form = RegisterForm()
+
+    if form.validate_on_submit():
+        # POST ROUTE FOR REGISTRATION FORM
+        try:
+            user = User.register(
+                username=form.username.data,
+                password=form.password.data,
+                email=form.email.data,
+                secret_question=form.secret_question.data,
+                secret_answer=form.secret_answer.data,
+            )
+            db.session.commit()
+        except IntegrityError:
+            form.username.errors.append("Username not available")
+            return render_template(
+                "auth.html", form=form, title="Register", q_display=""
+            )
+
+        session_login(user)
+
+        # Spotify authorization flow
+        auth = tekore.UserAuth(cred, scope)
+        auths[auth.state] = auth
+
+        return redirect(auth.url, 303)
+
+    return render_template("auth.html", form=form, title="Register", q_display="")
 
 
 @app.route("/callback")
@@ -377,8 +381,8 @@ def landing():
     """
     if g.user:
         return redirect("/user/home")
-    else:
-        return render_template("landing.html")
+
+    return render_template("landing.html")
 
 
 ###############
@@ -396,7 +400,7 @@ def homepage():
     if not g.user:
         return redirect("/")
 
-    recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10)
+    recent_playlists = Playlist.query.order_by(Playlist.id.desc()).limit(10).all()
 
     return render_template("/user/home.html", recent_playlists=recent_playlists)
 
@@ -498,7 +502,6 @@ def show_band_details(band_id):
     band = Band.query.filter_by(spotify_artist_id=band_id).first()
 
     if band is None:
-
         # Spotify
         res = spotify.artist(band_id)
     else:
@@ -528,9 +531,12 @@ def show_band_details(band_id):
     fm_band = {}
 
     try:
-        for band in res["artist"]:
-            if band["name"].lower() == band_name.lower():
-                fm_band = band
+        if res["artist"][0]["name"].lower() == band_name.lower():
+            fm_band = res["artist"][0]
+        else:
+            for band in res["artist"]:
+                if band["name"].lower() == band_name.lower():
+                    fm_band = band
     except KeyError:
         fm_band = None
 
@@ -549,7 +555,10 @@ def show_band_details(band_id):
             },
         ).json()
 
-        setlists = res["setlist"]
+        try:
+            setlists = res["setlist"]
+        except KeyError:
+            setlists = None
     else:
         setlists = None
 
@@ -681,72 +690,85 @@ def show_setlist(band_id, setlist_id):
     - Display page with data
     """
     if not g.user:
-        return redirect("/")
+        return redirect("/login")
 
     token = cred.refresh_user_token(g.user.spotify_user_token)
     spotify.token = token
+    saved = False
 
     res = spotify.artist(band_id).json()
     sp_band = json.loads(res)
 
-    url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
-    res = requests.get(
-        url,
-        headers={
-            "Accept": "application/json",
-            "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
-        },
-    ).json()
+    band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
 
-    setlist = res["sets"]["set"]
+    if band_db is not None:
+        playlist_db = Playlist.query.filter_by(
+            setlistfm_setlist_id=setlist_id, band_id=band_db.id
+        ).first()
+    else:
+        playlist_db = None
 
-    songs = []
+    if playlist_db is None:
+        url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
+        res = requests.get(
+            url,
+            headers={
+                "Accept": "application/json",
+                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+            },
+        ).json()
 
-    for set in setlist:
-        for song in set["song"]:
-            try:
-                cover = song["cover"]
-            except KeyError:
-                cover = None
-            if cover is None:
-                songs.append(song["name"])
-            else:
-                songs.append(song["name"] + " [Cover - " + cover["name"] + "]")
+        setlist = res["sets"]["set"]
 
-    play_name = sp_band["name"] + " @ " + res["venue"]["name"]
-    venue_loc = res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
-    try:
-        tour_name = res["tour"]["name"]
-    except KeyError:
-        tour_name = "N/A"
+        songs = []
 
-    playlist = Playlist(
-        spotify_playlist_id=None,
-        setlistfm_setlist_id=setlist_id,
-        name=play_name,
-        description=(
-            play_name
-            + " in "
-            + venue_loc
-            + " on "
-            + res["eventDate"]
-            + ". Tour - "
-            + tour_name
-        ),
-        tour_name=tour_name,
-        venue_name=res["venue"]["name"],
-        event_date=res["eventDate"],
-        venue_loc=venue_loc,
-        length=len(songs),
-        band_id=sp_band["id"],
-    )
-    playlist.add_songs(songs)
+        for set in setlist:
+            for song in set["song"]:
+                try:
+                    cover = song["cover"]
+                except KeyError:
+                    cover = None
+                if cover is None:
+                    songs.append(song["name"])
+                else:
+                    songs.append(song["name"] + " [Cover - " + cover["name"] + "]")
+
+        play_name = sp_band["name"] + " @ " + res["venue"]["name"]
+        venue_loc = res["venue"]["city"]["name"] + ", " + res["venue"]["city"]["state"]
+        try:
+            tour_name = res["tour"]["name"]
+        except KeyError:
+            tour_name = "N/A"
+
+        playlist_db = Playlist(
+            spotify_playlist_id=None,
+            setlistfm_setlist_id=setlist_id,
+            name=play_name,
+            description=(
+                play_name
+                + " in "
+                + venue_loc
+                + " on "
+                + res["eventDate"]
+                + ". Tour - "
+                + tour_name
+            ),
+            tour_name=tour_name,
+            venue_name=res["venue"]["name"],
+            event_date=res["eventDate"],
+            venue_loc=venue_loc,
+            length=len(songs),
+            band_id=sp_band["id"],
+        )
+        playlist_db.add_songs(songs)
+    else:
+        saved = True
 
     return render_template(
         "/playlist/playlist.html",
         band=sp_band,
-        playlist=playlist,
-        saved=False,
+        playlist=playlist_db,
+        saved=saved,
         duration=False,
     )
 
@@ -807,7 +829,14 @@ def create_playlist(band_id, setlist_id):
         db.session.commit()
 
     if playlist_db is None:
-
+        url = os.environ.get("SETLIST_FM_BASE_URL") + f"/setlist/{setlist_id}"
+        playlist_call = requests.get(
+            url,
+            headers={
+                "Accept": "application/json",
+                "x-api-key": os.environ.get("SETLIST_FM_API_KEY"),
+            },
+        ).json()
         setlist = playlist_call["sets"]["set"]
 
         venue_name = playlist_call["venue"]["name"]
@@ -851,6 +880,7 @@ def create_playlist(band_id, setlist_id):
 
         playlist = []
         uris = []
+        dur = 0
 
         for set in setlist:
             for song in set["song"]:
@@ -865,7 +895,7 @@ def create_playlist(band_id, setlist_id):
                 try:
                     spotify_song_id = song_res["items"][0]["id"]
                     name = song_res["items"][0]["name"]
-                    duration = song_res["items"][0]["duration_ms"] / 1000
+                    duration = floor(song_res["items"][0]["duration_ms"] / 1000)
 
                     song_db = Song.query.filter_by(
                         spotify_song_id=spotify_song_id, name=name, duration=duration
@@ -881,6 +911,7 @@ def create_playlist(band_id, setlist_id):
                         db.session.add(song_db)
                         db.session.commit()
                         uris.append("spotify:track:" + song_db.spotify_song_id)
+                        dur += duration
 
                     new_song_relate = Playlist_Song(
                         playlist_id=playlist_db.id, song_id=song_db.id
@@ -892,7 +923,10 @@ def create_playlist(band_id, setlist_id):
                 except IndexError:
                     not_included.append(song["name"])
 
+            play_duration = Playlist.format_duration(dur)
+
             playlist_db.length = len(playlist)
+            playlist_db.duration = play_duration
             db.session.add(playlist_db)
             db.session.commit()
 
@@ -1012,6 +1046,8 @@ def create_hype_playlist(band_id):
             song = setlist[i]
             songs.append(song)
 
+        dur = 0
+
         for song in songs:
             song_db = Song.query.filter_by(
                 spotify_song_id=song.id, name=song.name
@@ -1021,12 +1057,14 @@ def create_hype_playlist(band_id):
                 song_db = Song(
                     spotify_song_id=song.id,
                     name=song.name,
-                    duration=song.duration_ms,
+                    duration=floor(song.duration_ms / 1000),
                     band_id=band_db.id,
                 )
                 db.session.add(song_db)
                 db.session.commit()
-                uris.append("spotify:track:" + song_db.spotify_song_id)
+                dur += floor(song.duration_ms / 1000)
+
+            uris.append("spotify:track:" + song_db.spotify_song_id)
 
             new_song_relate = Playlist_Song(
                 playlist_id=playlist_db.id, song_id=song_db.id
@@ -1037,6 +1075,7 @@ def create_hype_playlist(band_id):
             playlist.append(song_db)
 
         playlist_db.length = len(playlist)
+        playlist_db.duration = Playlist.format_duration(dur)
         db.session.add(playlist_db)
         db.session.commit()
 
@@ -1071,64 +1110,78 @@ def show_hype_setlist(band_id):
     - Return band, playlist, page config variables (duration, saved)
     """
     if not g.user:
-        return redirect("/")
+        return redirect("/login")
 
     token = cred.refresh_user_token(g.user.spotify_user_token)
     spotify.token = token
+    saved = False
 
-    json_res = spotify.artist(band_id).json()
-    sp_band = json.loads(json_res)
+    band_db = Band.query.filter_by(spotify_artist_id=band_id).first()
 
-    res = spotify.artist_top_tracks(band_id, "US")
+    if band_db is not None:
+        playlist_db = Playlist.query.filter_by(
+            setlistfm_setlist_id="Hype", band_id=band_db.id
+        ).first()
+    else:
+        playlist_db = None
 
-    order = [1, 3, 5, 7, 9, 8, 6, 4, 2, 0]
-    setlist = []
-    songs = []
+    if playlist_db is None:
+        json_res = spotify.artist(band_id).json()
+        sp_band = json.loads(json_res)
 
-    for song in res:
-        name = song.name
-        setlist.append(name)
+        res = spotify.artist_top_tracks(band_id, "US")
 
-    for i in order:
-        song = setlist[i]
-        songs.append(song)
+        order = [1, 3, 5, 7, 9, 8, 6, 4, 2, 0]
+        setlist = []
+        songs = []
 
-    play_name = sp_band["name"] + " Hype-Up"
-    venue_name = "Wherever you'd like!"
-    venue_loc = "Your speakers"
-    event_date = "Whenever you'd like!"
+        for song in res:
+            name = song.name
+            setlist.append(name)
 
-    playlist = Playlist(
-        spotify_playlist_id=None,
-        setlistfm_setlist_id="Hype",
-        name=sp_band["band"],
-        description=play_name,
-        tour_name="N/A",
-        venue_name=venue_name,
-        event_date=event_date,
-        venue_loc=venue_loc,
-        length=len(songs),
-        band_id=sp_band["id"],
-    )
-    playlist.add_songs(songs)
+        for i in order:
+            song = setlist[i]
+            songs.append(song)
+
+        play_name = sp_band["name"] + " Hype-Up"
+        venue_name = "Wherever you'd like!"
+        venue_loc = "Your speakers"
+        event_date = "Whenever you'd like!"
+
+        playlist_db = Playlist(
+            spotify_playlist_id=None,
+            setlistfm_setlist_id="Hype",
+            name=sp_band["name"],
+            description=play_name,
+            tour_name="N/A",
+            venue_name=venue_name,
+            event_date=event_date,
+            venue_loc=venue_loc,
+            length=len(songs),
+            band_id=sp_band["id"],
+        )
+        playlist_db.add_songs(songs)
+    else:
+        saved = True
 
     return render_template(
         "/playlist/playlist.html",
-        playlist=playlist,
+        playlist=playlist_db,
         band=sp_band,
         duration=False,
-        saved=False,
+        saved=saved,
     )
 
 
 @app.route("/playlist/success")
 def show_success_page():
     """
-    Todo - shows the success page after playlist saved to spotify
+    GET ROUTE:
+    - Return save success page
     """
     if not g.user:
         abort(403)
-    return render_template("/playlist/result.html", result="Success!")
+    return render_template("/playlist/result.html")
 
 
 #######################
