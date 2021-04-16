@@ -113,10 +113,14 @@ def utility_processor():
         """
         venue_name = set["venue"]["name"]
         event_date = set["eventDate"]
+        try:
+            state_code = set["venue"]["city"]["stateCode"]
+        except KeyError:
+            state_code = ""
         venue_loc = (
             set["venue"]["city"]["name"]
             + ", "
-            + set["venue"]["city"]["stateCode"]
+            + state_code
             + ", "
             + set["venue"]["city"]["country"]["code"]
         )
