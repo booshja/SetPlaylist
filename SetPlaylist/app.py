@@ -52,12 +52,10 @@ APP_TOKEN = tekore.request_client_token(
 
 conf = tekore.config_from_environment(return_refresh=True)
 cred = tekore.RefreshingCredentials(*conf)
-spotify = tekore.Spotify(APP_TOKEN, chunked_on=True)
-spotify.chunked_on = False
+spotify = tekore.Spotify(APP_TOKEN)
 
 auths = {}
 auths["APP_TOKEN"] = APP_TOKEN
-users = {}
 scope = (
     tekore.scope.playlist_modify_private
     + tekore.scope.playlist_read_private
@@ -89,23 +87,11 @@ def session_logout():
     """
     if CURR_USER_KEY in session:
         del session[CURR_USER_KEY]
-    uid = session.pop("user", None)
-    if uid is not None:
-        users.pop(uid, None)
-
     return None
 
 
 @app.context_processor
 def utility_processor():
-    def format_name(name):
-        """
-        Returns a url-safe string
-        """
-        fixed = name.replace("/", "--sls--")
-        fixed = urllib.parse.quote(fixed, safe="")
-        return fixed
-
     def format_setlist_display(set):
         """
         Returns setlist details arranged in venue name - event date - venue location
@@ -127,14 +113,7 @@ def utility_processor():
             venue_name = "Venue Unknown"
         return f"{venue_name} - {event_date} - {venue_loc}"
 
-    return dict(format_name=format_name, format_setlist_display=format_setlist_display)
-
-
-def unformat_name(name):
-    """
-    Returns the decoded url component
-    """
-    return name.replace("--sls--", "/")
+    return dict(format_setlist_display=format_setlist_display)
 
 
 ##############################
@@ -520,10 +499,7 @@ def show_band_details(band_id):
 
     if band is None:
 
-        ##################################
         # Spotify
-        #   - Get band
-        #   - Set band_image variable
         res = spotify.artist(band_id)
     else:
         res = spotify.artist(band.spotify_artist_id)
@@ -537,10 +513,7 @@ def show_band_details(band_id):
         band_image = sp_band["images"][0]["url"]
     except IndexError:
         band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
-    # Spotify End
-    #################################
 
-    ###############################
     # Setlist.fm search band
     url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
     res = requests.get(
@@ -560,10 +533,7 @@ def show_band_details(band_id):
                 fm_band = band
     except KeyError:
         fm_band = None
-    # Setlist.fm search band end
-    ##############################
 
-    ##############################
     # Setlist.fm setlists search
     if fm_band is not None:
         url = (
@@ -582,10 +552,7 @@ def show_band_details(band_id):
         setlists = res["setlist"]
     else:
         setlists = None
-    # Setlist.fm setlists search end
-    ##############################
 
-    ################################
     # Bandsintown Upcoming Events Search
     bit_search_name = Band.bit_prep_band_name(band_name)
 
@@ -603,8 +570,6 @@ def show_band_details(band_id):
 
     if type(upcoming_shows) != list:
         upcoming_shows = None
-    # Bandsintown Upcoming Events Search End
-    ###################################
 
     return render_template(
         "/band/band-detail.html",
@@ -619,7 +584,9 @@ def show_band_details(band_id):
 def add_to_favorites(band_id):
     """
     POST ROUTE:
-    - Add or remove a band from the user's favorites
+    - If band is not in database
+        - Get info and add band to database
+    - Add or remove the band from the user's favorites
     """
     if not g.user:
         abort(403)
@@ -788,7 +755,12 @@ def show_setlist(band_id, setlist_id):
 def create_playlist(band_id, setlist_id):
     """
     POST ROUTE:
-    -
+    - If band not in databse, get info and create band
+    - If playlist not in database, get info and create playlist
+    - Put songs in to playlist
+        - If songs are not in database, create them
+    - Add the playlist to the user's playlists
+    - Add the playlist to the user's Spotify
     """
     if not g.user:
         abort(403)
@@ -950,7 +922,13 @@ def create_playlist(band_id, setlist_id):
 def create_hype_playlist(band_id):
     """
     POST ROUTE:
-    -
+    - If band not in database, create band
+    - If playlist not in database, create playlist
+    - Put songs in playlist
+        - If songs are not in database, create them
+    - Order the hype playlist
+    - Add the playlist to the user's playlists
+    - Add the playlist to the user's Spotify
     """
     if not g.user:
         abort(403)
@@ -1090,7 +1068,7 @@ def show_hype_setlist(band_id):
     GET ROUTE:
     - Get band's top 10 songs from spotify using band_id
     - Arrange data
-    - Return band, playlist dict, page config variables (duration, saved)
+    - Return band, playlist, page config variables (duration, saved)
     """
     if not g.user:
         return redirect("/")
