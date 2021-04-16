@@ -1,10 +1,11 @@
-import os
-
 import json
+import os
+from math import floor
+
 import requests
 import tekore
 from dotenv import load_dotenv
-from flask import Flask, g, redirect, render_template, request, session, abort
+from flask import Flask, abort, g, redirect, render_template, request, session
 from flask_debugtoolbar import DebugToolbarExtension
 from forms import (
     ForgotPassAnswer,
@@ -14,7 +15,6 @@ from forms import (
     RegisterForm,
     UserEditForm,
 )
-from math import floor
 from models import (
     Band,
     Favorite,

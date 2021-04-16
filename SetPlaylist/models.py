@@ -1,6 +1,7 @@
+from math import floor
+
 from flask_bcrypt import Bcrypt
 from flask_sqlalchemy import SQLAlchemy
-from math import floor
 
 bcrypt = Bcrypt()
 db = SQLAlchemy()
