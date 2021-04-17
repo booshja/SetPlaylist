@@ -179,7 +179,7 @@ def register():
 
         # Spotify authorization flow
         auth = tekore.UserAuth(cred, scope)
-        auths[auth.state] = auth
+        session[auth.state] = auth
 
         return redirect(auth.url, 303)
 
@@ -198,7 +198,7 @@ def spotify_callback():
 
         code = request.args.get("code")
         state = request.args.get("state", None)
-        auth = auths.pop(state, None)
+        auth = session.pop(state, None)
 
         if auth is None:
             abort(500)
