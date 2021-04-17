@@ -1,0 +1,304 @@
+@import "config";
+
+@include media-sm {
+    #search {
+        font-size: 1rem;
+        width: 100%;
+    }
+
+    .landing-hero {
+        div {
+            width: 40%;
+        }
+    }
+
+    #landing-div {
+        width: 50%;
+    }
+
+    .band-search__input {
+        width: 80%;
+    }
+
+    .our-favs__sets__set {
+        width: 30%;
+    }
+
+    #fav-third {
+        display: inline-flex;
+    }
+
+    .footer {
+        &__body {
+            justify-content: space-around;
+        }
+    }
+
+    .auth-box {
+        &__headline {
+            font-size: 2.5rem;
+        }
+        &__form {
+            &__label {
+                font-size: 1.8rem;
+            }
+
+            &__input {
+                width: 90%;
+                height: 2rem;
+            }
+        }
+    }
+
+    .login-text {
+        margin-bottom: 1rem;
+    }
+
+    .error-page {
+        &__feedback {
+            width: 90%;
+        }
+    }
+}
+
+@include media-md {
+    .content {
+        width: 70%;
+        align-self: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .menu-btn {
+        visibility: hidden;
+    }
+
+    .navbar {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        z-index: 1;
+        &__logo {
+            width: 30%;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+        }
+    }
+
+    .nav {
+        visibility: visible;
+        height: 50px;
+        position: relative;
+        z-index: 2;
+
+        .menu-nav {
+            display: flex;
+            flex-direction: row;
+            justify-content: flex-end;
+            transform: translateY(0);
+            height: 50px;
+            width: 100%;
+            background: $nav-color;
+            text-align: right;
+
+            &__item {
+                display: inline;
+                transform: translateX(0);
+                margin-right: 1rem;
+            }
+
+            &__link {
+                font-size: 1rem;
+                display: inline;
+
+                &__logout {
+                    font-size: 1rem;
+                }
+            }
+        }
+    }
+
+    .footer {
+        &__links {
+            display: flex;
+            width: 50%;
+            align-items: center;
+            ul {
+                justify-content: space-evenly;
+                align-items: center;
+                flex-direction: row;
+                align-items: center;
+                width: 100%;
+            }
+        }
+
+        &__logos {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-evenly;
+            width: 50%;
+        }
+    }
+
+    .landing-hero {
+        div {
+            width: 50%;
+        }
+    }
+
+    #landing-div {
+        width: 50%;
+    }
+
+    .auth-box {
+        width: 100%;
+    }
+
+    #landing-cta {
+        width: 30%;
+    }
+}
+
+@include media-lg {
+    .content {
+        width: 70%;
+        align-self: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .how__headline {
+        margin-bottom: 1rem;
+        font-size: 2.5rem;
+    }
+
+    .how__body {
+        flex-direction: row;
+        justify-content: space-evenly;
+
+        div {
+            width: 30%;
+
+            p {
+                width: 100%;
+            }
+        }
+    }
+
+    .our-favs__sets__set {
+        align-items: center;
+    }
+
+    .our-favs__set__link {
+        width: 80%;
+    }
+
+    .user-home {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+
+        &__left {
+            width: 65%;
+
+            &__playlists {
+                &__headline {
+                    margin-bottom: 1.5rem;
+                }
+            }
+        }
+
+        &__right {
+            width: 30%;
+
+            &__recents__headline {
+                text-align: center;
+            }
+        }
+    }
+
+    .user-home__left__playlists__lists {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+
+        &__playlist {
+            border: 2px solid $nav-color;
+            border-radius: 10px;
+            background-color: $card-color;
+            color: $text-light;
+            width: 40%;
+            margin-bottom: 1rem;
+            padding: 0.5rem;
+
+            a {
+                color: $nav-color;
+            }
+
+            h5 {
+                font-weight: 400;
+            }
+        }
+    }
+
+    #playlist-body {
+        display: flex;
+        justify-content: space-between;
+
+        .main-col {
+            width: 65%;
+
+            .playlist {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+            }
+        }
+
+        .right-col {
+            width: 30%;
+
+            &__links {
+                text-align: center;
+            }
+
+            &__details__list {
+                text-align: center;
+            }
+        }
+    }
+
+    .band-body {
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+
+        #band-links {
+            order: 1;
+            width: 30%;
+            text-align: center;
+        }
+
+        #band-setlists {
+            order: 0;
+            width: 65%;
+        }
+
+        #band-upcoming {
+            order: 2;
+            width: 100%;
+        }
+    }
+
+    .result__feedback {
+        width: 40%;
+    }
+
+    .error-page__feedback {
+        width: 65%;
+    }
+}

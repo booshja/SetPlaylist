@@ -63,7 +63,7 @@ scope = (
     + tekore.scope.playlist_read_collaborative
 )
 
-toolbar = DebugToolbarExtension(app)
+# toolbar = DebugToolbarExtension(app)
 
 connect_db(app)
 
@@ -1075,7 +1075,7 @@ def create_hype_playlist(band_id):
             playlist.append(song_db)
 
         playlist_db.length = len(playlist)
-        playlist_db.duration = Playlist.format_duration(dur)
+        playlist_db.duration = Playlist.format_duration(init_duration=dur)
         db.session.add(playlist_db)
         db.session.commit()
 
@@ -1125,9 +1125,10 @@ def show_hype_setlist(band_id):
     else:
         playlist_db = None
 
+    json_res = spotify.artist(band_id).json()
+    sp_band = json.loads(json_res)
+
     if playlist_db is None:
-        json_res = spotify.artist(band_id).json()
-        sp_band = json.loads(json_res)
 
         res = spotify.artist_top_tracks(band_id, "US")
 
@@ -1171,17 +1172,6 @@ def show_hype_setlist(band_id):
         duration=False,
         saved=saved,
     )
-
-
-@app.route("/playlist/success")
-def show_success_page():
-    """
-    GET ROUTE:
-    - Return save success page
-    """
-    if not g.user:
-        abort(403)
-    return render_template("/playlist/result.html")
 
 
 #######################

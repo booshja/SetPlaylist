@@ -19,6 +19,7 @@
 
         &__headline {
             font-size: 2rem;
+            margin-bottom: 0.5rem;
         }
 
         &__sub-headline {
@@ -30,20 +31,23 @@
 .playlist {
     margin-bottom: 25px;
     flex-direction: column;
-    align-items: center;
 
     &__headline {
         font-size: 1.7rem;
         margin-bottom: 0.7rem;
+        text-align: center;
     }
 
     &__desc {
         margin-bottom: 0.7rem;
+        text-align: center;
+        line-height: 130%;
     }
 
     &__list {
+        padding: 0.5rem 1.5rem;
         &__song {
-            padding: 0.5rem 0;
+            padding: 0.5rem 0.5rem;
         }
     }
 }
@@ -57,6 +61,20 @@
     flex-direction: column;
     align-items: center;
 
+    &__button {
+        padding: 0.5rem 0;
+        font-size: 1.2rem;
+        border: none;
+        background: none;
+        cursor: pointer;
+        color: $card-color;
+        font-family: "Poppins", sans-serif;
+
+        &:hover {
+            color: $nav-color;
+        }
+    }
+
     &__link {
         padding: 0.7rem 0;
         font-size: 1.2rem;
@@ -64,7 +82,6 @@
 }
 
 .right-col__details {
-    margin-bottom: 50px;
     flex-direction: column;
     align-items: center;
 

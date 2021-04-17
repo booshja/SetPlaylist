@@ -197,7 +197,7 @@ class Playlist(db.Model):
         self.songz = songs
         return None
 
-    def format_duration(self, init_duration):
+    def format_duration(init_duration):
         """
         Takes duration in seconds and returns a string of the duration in hrs/min/sec
         """

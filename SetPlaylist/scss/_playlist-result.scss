@@ -14,25 +14,24 @@
         flex-direction: column;
         align-content: space-around;
         padding: 1rem;
-        width: 50%;
+        width: 55%;
         position: relative;
-        top: 10%;
-        left: 5%;
+        top: 8%;
+        left: 4%;
 
         &__headline {
             margin-bottom: 0.2rem;
+            font-size: 1.7rem;
         }
 
         &__link {
-            margin-top: 0.5rem;
+            margin-top: 0.7rem;
+            font-size: 1.2rem;
         }
     }
 }
 
 .playlist-success {
     background-image: url("/static/img/tobias-tullius-JdJrqv7BzhM-unsplash.jpg");
-}
-
-.playlist-fail {
-    background-image: url("/static/img/sarah-kilian-52jRtc2S_VE-unsplash.jpg");
+    margin-bottom: -50px;
 }

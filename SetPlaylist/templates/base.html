@@ -14,7 +14,7 @@
     </head>
     <body>
         <header class="navbar">
-                <div>
+                <div class="navbar__logo">
                     {% if g.user %}
                     <a href="/user/home">
                     {% else %}
@@ -28,7 +28,7 @@
                 <div class="menu-btn">
                     <span class="menu-btn__burger"></span>
                 </div>
-                <nav class="nav">
+            <nav class="nav">
                 <ul class="menu-nav">
                     {% if not g.user %}
                     <li class="menu-nav__item">
@@ -50,7 +50,7 @@
                     </li>
                     {% else %}
                     <li class="menu-nav__item">
-                        <form action="/band/search" class="menu-nav__search">
+                        <form action="/band/search" class="menu-nav__link">
                             <input
                             name="search"
                             placeholder="Search Bands"
@@ -60,14 +60,16 @@
                     </li>
                     <li class="menu-nav__item"><a href="/user/home" class="menu-nav__link">{{g.user.username}}</a></li>
                     <li class="menu-nav__item">
-                        <form action="/logout" method="post" class="menu-nav__link"><button type="submit">Log Out</button></form>
+                        <form action="/logout" method="post" class="menu-nav__link"><button type="submit" class="menu-nav__link__logout">Log Out</button></form>
                     </li>
                     {% endif %}
                 </ul>
             </nav>
         </header>
         <main>
+            <div class="content">
         {% block content %}{% endblock content %}
+        </div>
         </main>
         <footer>
             <div class="footer">

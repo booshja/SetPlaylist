@@ -11,11 +11,17 @@ $card-color: #3b5262;
     padding: 0;
 }
 
-@mixin media-md {
-    @media screen and (min-width: 768px) {
+@mixin media-sm {
+    @media screen and (min-width: 480px) {
         @content;
     }
 }
+@mixin media-md {
+    @media screen and (min-width: 720px) {
+        @content;
+    }
+}
+
 @mixin media-lg {
     @media screen and (min-width: 1024px) {
         @content;

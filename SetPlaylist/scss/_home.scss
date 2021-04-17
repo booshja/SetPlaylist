@@ -15,10 +15,16 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
+            text-align: center;
         }
 
         p {
             font-size: 1.2rem;
+        }
+
+        &__lists__playlist {
+            padding-bottom: 1.25rem;
+            text-align: center;
         }
     }
 
@@ -27,6 +33,10 @@
         align-items: center;
         margin-top: 25px;
         padding: 1rem;
+
+        &__list {
+            text-align: center;
+        }
 
         &__headline {
             font-size: 2rem;
@@ -37,7 +47,31 @@
         p {
             font-size: 1.2rem;
         }
+
+        &__band {
+            margin-bottom: 1.25rem;
+            font-size: 1.25rem;
+
+            &__trash {
+                display: inline;
+
+                button {
+                    background: none;
+                    border: none;
+                    color: $card-color;
+
+                    &:hover {
+                        cursor: pointer;
+                        color: #810000;
+                    }
+                }
+            }
+        }
     }
+}
+
+.user-home__playlist__item {
+    padding: 0.25rem 0;
 }
 
 .user-home__right {
@@ -51,6 +85,7 @@
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
+            text-align: center;
         }
 
         &__links {
@@ -67,13 +102,18 @@
     &__recents {
         flex-direction: column;
         align-items: center;
-        margin: 25px 0;
+        margin-top: 25px;
         padding: 1rem;
 
         &__headline {
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 0.75rem;
+        }
+
+        &__links__link {
+            margin-bottom: 1rem;
+            text-align: center;
         }
     }
 }

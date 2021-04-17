@@ -3,7 +3,7 @@ endblock title %} {% block content %}
 <section id="hero">
     <div class="landing-hero home">
         <div class="landing-hero__title-div">
-            <h1 class="landing-her__title-div__h1">Welcome back,</h1>
+            <h1 class="landing-hero__title-div__h1">Welcome back,</h1>
             <p class="landing-hero__title-div__p">{{g.user.username}}</p>
         </div>
     </div>
@@ -26,23 +26,25 @@ endblock title %} {% block content %}
                 <div class="user-home__left__playlists__lists">
                     {% if g.user.playlists %} {% for playlist in
                     g.user.playlists %}
-                    <article>
+                    <article
+                        class="user-home__left__playlists__lists__playlist"
+                    >
                         <div class="user-home__playlist">
                             <a
                                 href="/playlist/show/{{playlist.band.spotify_artist_id}}/{{playlist.setlistfm_setlist_id}}"
-                                class="user-home__playlist__name"
+                                class="user-home__playlist__item"
                                 >{{playlist.name}}</a
                             >
-                            <h5 class="user-home__playlist__band">
+                            <h5 class="user-home__playlist__item">
                                 {{playlist.band.name}}
                             </h5>
-                            <h5 class="user-home__playlist__venue-name">
+                            <h5 class="user-home__playlist__item">
                                 {{playlist.venue_name}}
                             </h5>
-                            <h5 class="user-home__playlist__venue-loc">
+                            <h5 class="user-home__playlist__item">
                                 {{playlist.venue_loc}}
                             </h5>
-                            <h5 class="user-home__playlist__date">
+                            <h5 class="user-home__playlist__item">
                                 {{playlist.event_date}}
                             </h5>
                         </div>
@@ -56,29 +58,26 @@ endblock title %} {% block content %}
                 </div>
             </div>
             <div class="user-home__left__bands container">
-                <h2 class="user-home__left__bands__headline">
-                    Your Favorite Bands
-                </h2>
-                <div class="user-home__left__bands__band">
+                <h2 class="user-home__left__bands__headline">Your Favorites</h2>
+                <div>
                     {% if g.user.favorites %}
-                    <ul>
+                    <ul class="user-home__left__bands__list">
                         {% for band in g.user.favorites %}
-                        <li>
+                        <li class="user-home__left__bands__band">
                             <a
                                 href="/band/{{band.spotify_artist_id}}"
                                 class="user-home__left__bands__band__name"
                                 >{{band.name}}</a
                             >
-                            <small>
-                                <form
-                                    action="/favorite/{{band.spotify_artist_id}}"
-                                    method="POST"
-                                >
-                                    <button type="submit">
-                                        <i class="far fa-trash-alt"></i>
-                                    </button>
-                                </form>
-                            </small>
+                            <form
+                                action="/favorite/{{band.spotify_artist_id}}"
+                                method="POST"
+                                class="user-home__left__bands__band__trash"
+                            >
+                                <button type="submit">
+                                    <i class="far fa-trash-alt"></i>
+                                </button>
+                            </form>
                         </li>
                         {% endfor %}
                     </ul>
@@ -95,28 +94,26 @@ endblock title %} {% block content %}
             <div class="user-home__right__account container">
                 <h3 class="user-home__right__account__headline" h3>Account</h3>
                 <div class="user-home__right__account__links">
-                    <a href="/user/edit/{{g.user.id}}">Edit Account Details</a>
+                    <a href="/user/edit/{{g.user.id}}">Edit Account</a>
                 </div>
             </div>
             <div class="user-home__right__recents container">
                 <h4 class="user-home__right__recents__headline">
-                    Recently Created Playlists
+                    Recently Created
                 </h4>
                 <div class="user-home__right__recents__links">
                     {% if recent_playlists %}
                     <ul>
                         {% for playlist in recent_playlists %}
-                        <li>
+                        <li class="user-home__right__recents__links__link">
                             {% if playlist.setslistfm_setlist_id == 'Hype' %}
                             <a
                                 href="/playlist/hype/{{playlist.band.spotify_artist_id}}"
-                                class="user-home__right__recents__links__link"
                                 >{{playlist.name}}</a
                             >
                             {% else %}
                             <a
                                 href="/playlist/show/{{playlist.band.spotify_artist_id}}/{{playlist.setlistfm_setlist_id}}"
-                                class="user-home__right__recents__links__link"
                                 >{{playlist.name}}</a
                             >
                             {% endif %}

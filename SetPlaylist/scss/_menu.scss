@@ -3,7 +3,7 @@
 .menu-btn {
     position: absolute;
     z-index: 1;
-    right: 1rem;
+    right: 1.5rem;
     top: 1rem;
     height: 20px;
     width: 28px;
@@ -12,7 +12,6 @@
 
     &__burger {
         position: absolute;
-        right: 1rem;
         top: 0.5rem;
         width: 28px;
         height: 3px;
@@ -127,8 +126,28 @@
             &:hover {
                 color: $nav-color;
             }
+
+            &__logout {
+                border: none;
+                background: none;
+                font-size: 2rem;
+                text-transform: uppercase;
+                font-weight: 300;
+                color: $text-light;
+                @include transition-ease;
+                font-family: "Poppins", sans-serif;
+
+                &:hover {
+                    cursor: pointer;
+                    color: $nav-color;
+                }
+            }
         }
     }
+}
+
+#search {
+    font-size: 1.25rem;
 }
 
 @for $i from 1 through 4 {

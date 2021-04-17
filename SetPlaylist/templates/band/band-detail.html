@@ -7,60 +7,64 @@ endblock %} {% block content %}
     </div>
 </section>
 {% if g.user %}
-<section id="band-links">
-    <div class="band-links container">
-        <a href="/playlist/hype/{{band['id']}}" class="band-links__link"
-            >See Hype Up Playlist</a
-        >
-        <a
-            href="{{band['external_urls']['spotify']}}"
-            class="band-links__link"
-            target="_blank"
-            rel="noopener noreferrer"
-            >{{band['name']}} on Spotify</a
-        >
-        <form action="/favorite/{{band['id']}}" method="post">
-            <button type="submit">Add/Remove from Favorites</button>
-        </form>
-    </div>
-</section>
-<section id="band-setlists">
-    <div class="band-setlists container">
-        <h3 class="band-setlists__headline">Setlists</h3>
-        <ul class="band-setlists__list">
-            {% if setlists == None %}
-            <li>This band has no setlists.</li>
-            {% else %} {% for set in setlists %}
-            <li>
-                <a
-                    href="/playlist/show/{{band['id']}}/{{set['id']}}"
-                    class="band-setlists__list__setlist"
-                    >{{format_setlist_display(set)}}</a
-                >
-            </li>
-            {% endfor %} {% endif %}
-        </ul>
-    </div>
-</section>
-<section id="band-upcoming">
-    <div class="band-upcoming container">
-        <h3 class="band-upcoming__headline">Upcoming Shows</h3>
-        {% if upcoming_shows %}
-        <ul class="band-upcoming__list">
-            {% for show in upcoming_shows %}
-            <li>
-                <a href="{{show.url}}" class="band-upcoming__list__show"
-                    >{{show['datetime'][:10]}} - {{show['venue']['name']}} -
-                    {{show['venue']['location']}}</a
-                >
-            </li>
-            {% endfor %}
-        </ul>
-        {% else %}
-        <p>No upcoming shows for {{band['name']}}</p>
-        {% endif %}
-    </div>
-</section>
+<div class="band-body">
+    <section id="band-links">
+        <div class="band-links container">
+            <a href="/playlist/hype/{{band['id']}}" class="band-links__link"
+                >See Hype Up Playlist</a
+            >
+            <a
+                href="{{band['external_urls']['spotify']}}"
+                class="band-links__link"
+                target="_blank"
+                rel="noopener noreferrer"
+                >{{band['name']}} on Spotify</a
+            >
+            <form action="/favorite/{{band['id']}}" method="post">
+                <button type="submit" class="band-links__link__button">
+                    Add/Remove from Favorites
+                </button>
+            </form>
+        </div>
+    </section>
+    <section id="band-setlists">
+        <div class="band-setlists container">
+            <h3 class="band-setlists__headline">Setlists</h3>
+            <ul class="band-setlists__list">
+                {% if setlists == None %}
+                <li>This band has no setlists.</li>
+                {% else %} {% for set in setlists %}
+                <li>
+                    <a
+                        href="/playlist/show/{{band['id']}}/{{set['id']}}"
+                        class="band-setlists__list__setlist"
+                        >{{format_setlist_display(set)}}</a
+                    >
+                </li>
+                {% endfor %} {% endif %}
+            </ul>
+        </div>
+    </section>
+    <section id="band-upcoming">
+        <div class="band-upcoming container">
+            <h3 class="band-upcoming__headline">Upcoming Shows</h3>
+            {% if upcoming_shows %}
+            <ul class="band-upcoming__list">
+                {% for show in upcoming_shows %}
+                <li class="band-upcoming__list__show">
+                    <a href="{{show.url}}"
+                        >{{show['datetime'][:10]}} - {{show['venue']['name']}} -
+                        {{show['venue']['location']}}</a
+                    >
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p>No upcoming shows for {{band['name']}}</p>
+            {% endif %}
+        </div>
+    </section>
+</div>
 {% else %}
 <section id="fuzzy-detail">
     <div class="band-fuzzy-bio container">

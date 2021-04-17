@@ -25,16 +25,17 @@
             align-self: flex-start;
             margin: 0.5rem 0 0.5rem 0;
             font-weight: 700;
+            font-size: 1.2rem;
         }
 
         &__input {
             width: 80%;
-            height: 1.5rem;
+            height: 1.7rem;
         }
 
         &__redirect-notice {
             margin-top: 1rem;
-            font-size: 0.7rem;
+            font-size: 0.8rem;
             align-self: flex-end;
         }
 
