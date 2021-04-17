@@ -7,6 +7,9 @@ import tekore
 from dotenv import load_dotenv
 from flask import Flask, abort, g, redirect, render_template, request, session
 from flask_debugtoolbar import DebugToolbarExtension
+from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
+
 from forms import (
     ForgotPassAnswer,
     ForgotPassUsername,
@@ -26,8 +29,6 @@ from models import (
     connect_db,
     db,
 )
-from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm.exc import MultipleResultsFound, NoResultFound
 
 load_dotenv()
 
