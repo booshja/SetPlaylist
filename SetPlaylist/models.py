@@ -150,7 +150,7 @@ class User(db.Model):
         """
         A more readable representation of the instance
         """
-        return f"<User id={self.id} username={self.username} spotify_connected={self.spotify_connected}>"
+        return f"<User id={self.id} username={self.username} email={self.email}>"
 
 
 class Playlist(db.Model):
@@ -197,7 +197,7 @@ class Playlist(db.Model):
         self.songz = songs
         return None
 
-    def format_duration(init_duration):
+    def format_duration(self, init_duration):
         """
         Takes duration in seconds and returns a string of the duration in hrs/min/sec
         """

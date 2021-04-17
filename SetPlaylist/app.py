@@ -36,7 +36,7 @@ app = Flask(__name__)
 
 
 app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get(
-    "DATABASE_URI", "postgres:///setplaylist-test"
+    "DATABASE_URI", "postgresql:///setplaylist_test"
 )
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 app.config["SQLALCHEMY_ECHO"] = False
