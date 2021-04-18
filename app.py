@@ -623,7 +623,7 @@ def add_to_favorites(band_id):
                 band_image = "/static/img/rocco-dipoppa-_uDj_lyPVpA-unsplash.jpg"
 
             url = os.environ.get("SETLIST_FM_BASE_URL") + "/search/artists"
-            json_res = requests.get(
+            res = requests.get(
                 url,
                 headers={
                     "Accept": "application/json",
@@ -631,7 +631,6 @@ def add_to_favorites(band_id):
                 },
                 params=[("artistName", sp_band["name"])],
             ).json()
-            res = json.loads(json_res)
 
             for band in res["artist"]:
                 if band["name"].lower() == sp_band["name"].lower():
