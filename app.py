@@ -643,6 +643,9 @@ def add_to_favorites(band_id):
                 photo=band_image,
             )
 
+            db.session.add(band_db)
+            db.session.commit()
+
         new_fav = Favorite(user_id=g.user.id, band_id=band_db.id)
         db.session.add(new_fav)
         db.session.commit()
